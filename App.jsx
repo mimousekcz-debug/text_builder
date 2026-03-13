@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 
 const Icons = {
-  Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-  Plus: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
-  Image: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+  Trash: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+  Plus: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+  Save: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
 };
 
-export default function ShoptetBuilderUltimate() {
+export default function ShoptetBuilderPro() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
 
+  // Načtení z LocalStorage
   useEffect(() => {
-    const saved = localStorage.getItem("shoptet_builder_v2");
+    const saved = localStorage.getItem("shoptet_pro_builder");
     if (saved) {
       const parsed = JSON.parse(saved);
       setProjects(parsed);
@@ -21,28 +22,42 @@ export default function ShoptetBuilderUltimate() {
     }
   }, []);
 
+  // Automatické ukládání
   useEffect(() => {
-    localStorage.setItem("shoptet_builder_v2", JSON.stringify(projects));
+    localStorage.setItem("shoptet_pro_builder", JSON.stringify(projects));
   }, [projects]);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
 
+  const createProject = () => {
+    const name = prompt("Název nového projektu:");
+    if (!name) return;
+    const newProj = { id: crypto.randomUUID(), name, blocks: [] };
+    setProjects([...projects, newProj]);
+    setActiveProjectId(newProj.id);
+  };
+
+  const deleteProject = (id) => {
+    if (window.confirm("Opravdu smazat celý projekt?")) {
+      const filtered = projects.filter(p => p.id !== id);
+      setProjects(filtered);
+      if (activeProjectId === id) setActiveProjectId(filtered[0]?.id || null);
+    }
+  };
+
   const addBlock = (type) => {
-    if (!activeProjectId) return alert("Vyberte projekt");
+    if (!activeProjectId) return alert("Nejdříve vytvořte nebo vyberte projekt.");
     const id = crypto.randomUUID();
-    const newBlock = {
-      id,
-      type,
-      heading: "Nadpis bloku",
-      text: "Zde je ukázkový text pro váš nový widget.",
-      url: "https://placehold.co/600x400?text=Obrazek",
-      btnText: "Klikněte zde",
-      gallery: ["https://placehold.co/300x300", "https://placehold.co/300x300", "https://placehold.co/300x300"],
-      faq: [{ q: "Otázka?", a: "Odpověď." }]
+    const defaults = {
+      heading: "Nový blok",
+      text: "Zde upravte text bloku pro váš e-shop.",
+      url: type === 'youtube' ? "https://www.youtube.com/embed/dQw4w9WgXcQ" : "https://placehold.co/600x400",
+      btnText: "Více informací",
+      faq: [{ q: "Nová otázka?", a: "Tady je odpověď." }]
     };
-    
+
     setProjects(prev => prev.map(p => 
-      p.id === activeProjectId ? { ...p, blocks: [...p.blocks, newBlock] } : p
+      p.id === activeProjectId ? { ...p, blocks: [...p.blocks, { id, type, ...defaults }] } : p
     ));
     setSelectedBlockId(id);
   };
@@ -54,160 +69,169 @@ export default function ShoptetBuilderUltimate() {
   };
 
   const copyHTML = () => {
-    let html = `<div class="st-builder-wrap" style="max-width:1100px; margin:0 auto; font-family: sans-serif; color: #333;">\n`;
+    if (!activeProject) return;
+    let html = `\n<div class="shoptet-custom-content" style="max-width:1200px; margin:0 auto; font-family:sans-serif;">\n`;
+    
     activeProject.blocks.forEach(b => {
+      const styleInner = "padding: 20px 0;";
       switch(b.type) {
-        case 'heading': html += `<h2 style="text-align:center; margin:40px 0;">${b.heading}</h2>\n`; break;
-        case 'text': html += `<p style="line-height:1.6; margin-bottom:20px;">${b.text}</p>\n`; break;
-        case 'img-left': html += `<div style="display:flex; gap:30px; align-items:center; margin:30px 0; flex-wrap:wrap;"><img src="${b.url}" style="flex:1; min-width:300px; border-radius:8px;"><div style="flex:1;"><h3>${b.heading}</h3><p>${b.text}</p></div></div>\n`; break;
-        case 'img-right': html += `<div style="display:flex; gap:30px; align-items:center; margin:30px 0; flex-wrap:wrap;"><div style="flex:1;"><h3>${b.heading}</h3><p>${b.text}</p></div><img src="${b.url}" style="flex:1; min-width:300px; border-radius:8px;"></div>\n`; break;
-        case 'image': html += `<img src="${b.url}" style="width:100%; border-radius:10px; margin:20px 0;">\n`; break;
-        case 'cta': html += `<div style="text-align:center; padding:40px; background:#f8f9fa; border-radius:12px; margin:30px 0;"><h3>${b.heading}</h3><a href="${b.url}" style="display:inline-block; padding:12px 30px; background:#000; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold;">${b.btnText}</a></div>\n`; break;
-        case 'gallery': html += `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin:30px 0;">${b.gallery.map(img => `<img src="${img}" style="width:100%; border-radius:5px;">`).join('')}</div>\n`; break;
+        case 'heading': html += `<h2 style="text-align:center; font-size:2rem; margin:40px 0;">${b.heading}</h2>\n`; break;
+        case 'text': html += `<div style="${styleInner} line-height:1.7;">${b.text}</div>\n`; break;
+        case 'image': html += `<img src="${b.url}" style="width:100%; height:auto; border-radius:8px; margin:20px 0;" alt="${b.heading}">\n`; break;
+        case 'youtube': html += `<div style="position:relative; padding-bottom:56.25%; height:0; margin:30px 0;"><iframe src="${b.url}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:8px;" allowfullscreen></iframe></div>\n`; break;
+        case 'cta': html += `<div style="text-align:center; background:#f4f4f4; padding:50px; border-radius:15px; margin:30px 0;"><h3>${b.heading}</h3><a href="${b.url}" style="display:inline-block; background:#000; color:#fff; padding:15px 35px; text-decoration:none; border-radius:5px; font-weight:bold;">${b.btnText}</a></div>\n`; break;
+        case 'faq': 
+          html += `<div style="margin:30px 0;">${b.faq.map(f => `<div style="border-bottom:1px solid #eee; padding:15px 0;"><strong>${f.q}</strong><p>${f.a}</p></div>`).join('')}</div>\n`; 
+          break;
         default: break;
       }
     });
+    
     html += `</div>`;
     navigator.clipboard.writeText(html);
-    alert("HTML kód byl zkopírován pro Shoptet!");
+    alert("Kód byl zkopírován! Nyní ho vložte do Shoptetu (HTML editoru).");
   };
 
   if (!isLoggedIn) {
     return (
       <div className="login-screen">
         <div className="login-box">
-          <h2>Blinky Content Builder</h2>
-          <input type="text" placeholder="Uživatelské jméno" />
-          <input type="password" placeholder="Heslo" />
-          <button onClick={() => setIsLoggedIn(true)}>Vstoupit do editoru</button>
+          <h2>Pro Editor v1.0</h2>
+          <p>Přihlášení do administrační sekce</p>
+          <input type="text" placeholder="Admin" defaultValue="admin" />
+          <input type="password" placeholder="Heslo" defaultValue="****" />
+          <button onClick={() => setIsLoggedIn(true)}>Vstoupit</button>
         </div>
       </div>
     );
   }
 
+  const selectedBlock = activeProject?.blocks.find(b => b.id === selectedBlockId);
+
   return (
     <div className="builder-root">
+      {/* Horní lišta s projekty */}
       <header className="top-nav">
-        <div className="nav-info"><b>Blinky</b> / {activeProject?.name || 'Žádný projekt'}</div>
-        <button className="export-btn" onClick={copyHTML}>Exportovat pro Shoptet</button>
+        <div className="project-selector">
+          <select value={activeProjectId || ""} onChange={(e) => setActiveProjectId(e.target.value)}>
+            <option value="" disabled>Vyberte projekt...</option>
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <button className="icon-btn" onClick={createProject} title="Nový projekt"><Icons.Plus /></button>
+          {activeProjectId && <button className="icon-btn del" onClick={() => deleteProject(activeProjectId)}><Icons.Trash /></button>}
+        </div>
+        <div className="actions">
+          <button className="export-btn" onClick={copyHTML}>Kopírovat HTML do Shoptetu</button>
+        </div>
       </header>
 
       <div className="editor-main">
-        {/* WIDGET BAR - Levý */}
+        {/* Widget Panel */}
         <aside className="widget-bar">
-          <h3>Obsahové bloky</h3>
+          <h3>Knihovna prvků</h3>
           <div className="widget-grid">
-            <button onClick={() => addBlock('heading')}>Nadpis</button>
-            <button onClick={() => addBlock('text')}>Text</button>
-            <button onClick={() => addBlock('img-right')}>Text + Obr. vpravo</button>
-            <button onClick={() => addBlock('img-left')}>Text + Obr. vlevo</button>
-            <button onClick={() => addBlock('image')}>Samostatný obr.</button>
-            <button onClick={() => addBlock('gallery')}>Galerie</button>
-            <button onClick={() => addBlock('youtube')}>YouTube Video</button>
-            <button onClick={() => addBlock('faq')}>FAQ</button>
-            <button onClick={() => addBlock('cta')}>CTA Tlačítko</button>
+            {['heading', 'text', 'image', 'youtube', 'faq', 'cta'].map(type => (
+              <button key={type} onClick={() => addBlock(type)}>
+                {type.toUpperCase()}
+              </button>
+            ))}
           </div>
-          <hr />
-          <button className="new-proj-btn" onClick={() => {
-            const n = prompt("Název projektu");
-            if(n) setProjects([...projects, {id: crypto.randomUUID(), name: n, blocks: []}]);
-          }}>+ Nový projekt</button>
         </aside>
 
-        {/* CANVAS - Prostředek */}
+        {/* Live Preview Canvas */}
         <main className="canvas">
           <div className="preview-container">
+            {!activeProject && <div className="empty-state">Vytvořte projekt pro začátek práce</div>}
             {activeProject?.blocks.map(b => (
-              <div key={b.id} className={`block-view ${selectedBlockId === b.id ? 'active' : ''}`} onClick={() => setSelectedBlockId(b.id)}>
-                <span className="block-tag">{b.type}</span>
+              <div 
+                key={b.id} 
+                className={`block-view ${selectedBlockId === b.id ? 'active' : ''}`} 
+                onClick={() => setSelectedBlockId(b.id)}
+              >
+                <div className="block-label">{b.type}</div>
                 {b.type === 'heading' && <h2>{b.heading}</h2>}
-                {b.type === 'text' && <p>{b.text}</p>}
-                {(b.type === 'img-left' || b.type === 'img-right') && (
-                  <div className={`flex-preview ${b.type}`}>
-                    <div className="txt"><h3>{b.heading}</h3><p>{b.text}</p></div>
-                    <div className="img"><img src={b.url} alt="" /></div>
-                  </div>
-                )}
-                {b.type === 'image' && <img src={b.url} className="full-img" />}
-                {b.type === 'gallery' && <div className="gal-preview">{b.gallery.map((g,i) => <img key={i} src={g}/>)}</div>}
+                {b.type === 'text' && <div dangerouslySetInnerHTML={{ __html: b.text.replace(/\n/g, '<br/>') }} />}
+                {b.type === 'image' && <img src={b.url} style={{maxWidth:'100%'}} alt="Preview" />}
+                {b.type === 'youtube' && <div className="video-placeholder">Video: {b.url}</div>}
                 {b.type === 'cta' && <div className="cta-preview"><h3>{b.heading}</h3><button>{b.btnText}</button></div>}
+                {b.type === 'faq' && <div className="faq-preview">{b.faq.length} otázek</div>}
               </div>
             ))}
           </div>
         </main>
 
-        {/* SETTINGS - Pravý */}
+        {/* Pravý Settings Panel */}
         <aside className="settings-bar">
-          {selectedBlockId ? (
+          {selectedBlock ? (
             <div className="settings-pane">
-              <h3>Nastavení widgetu</h3>
-              <label>Nadpis / Hlavní text</label>
-              <input value={activeProject.blocks.find(b => b.id === selectedBlockId).heading} onChange={e => updateBlock({heading: e.target.value})} />
+              <h3>Nastavení: {selectedBlock.type}</h3>
+              <hr />
               
-              <label>Doplňující text</label>
-              <textarea value={activeProject.blocks.find(b => b.id === selectedBlockId).text} onChange={e => updateBlock({text: e.target.value})} />
+              <label>Hlavní text / Nadpis</label>
+              <input value={selectedBlock.heading} onChange={e => updateBlock({heading: e.target.value})} />
+              
+              <label>Obsah (Text / HTML)</label>
+              <textarea rows={6} value={selectedBlock.text} onChange={e => updateBlock({text: e.target.value})} />
 
-              {(selectedBlockId && ['image', 'img-left', 'img-right', 'youtube', 'cta'].includes(activeProject.blocks.find(b => b.id === selectedBlockId).type)) && (
+              {['image', 'youtube', 'cta'].includes(selectedBlock.type) && (
                 <>
-                  <label>URL (Obrázek / Video / Link)</label>
-                  <input value={activeProject.blocks.find(b => b.id === selectedBlockId).url} onChange={e => updateBlock({url: e.target.value})} />
+                  <label>URL (Odkaz / Zdroj)</label>
+                  <input value={selectedBlock.url} onChange={e => updateBlock({url: e.target.value})} />
                 </>
               )}
 
-              {activeProject.blocks.find(b => b.id === selectedBlockId).type === 'cta' && (
+              {selectedBlock.type === 'cta' && (
                 <>
-                  <label>Text na tlačítku</label>
-                  <input value={activeProject.blocks.find(b => b.id === selectedBlockId).btnText} onChange={e => updateBlock({btnText: e.target.value})} />
+                  <label>Text tlačítka</label>
+                  <input value={selectedBlock.btnText} onChange={e => updateBlock({btnText: e.target.value})} />
                 </>
               )}
-              
+
               <button className="del-btn" onClick={() => {
                 setProjects(prev => prev.map(p => p.id === activeProjectId ? {...p, blocks: p.blocks.filter(x => x.id !== selectedBlockId)} : p));
                 setSelectedBlockId(null);
-              }}>Smazat widget</button>
+              }}>Smazat tento blok</button>
             </div>
-          ) : <div className="empty">Vyberte prvek na ploše</div>}
+          ) : <div className="empty-msg">Klikněte na blok pro editaci</div>}
         </aside>
       </div>
 
       <style>{`
-        .builder-root { height: 100vh; display: flex; flex-direction: column; font-family: sans-serif; background: #f4f7f9; }
-        .top-nav { background: #fff; padding: 10px 25px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .export-btn { background: #ff4d4d; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .builder-root { height: 100vh; display: flex; flex-direction: column; background: #eff2f5; font-family: 'Inter', sans-serif; }
+        .top-nav { background: #1a1d21; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .project-selector { display: flex; gap: 10px; align-items: center; }
+        .project-selector select { background: #2c313a; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; }
+        .icon-btn { background: #3e4451; color: white; border: none; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn.del:hover { background: #e02424; }
+        .export-btn { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         
         .editor-main { display: flex; flex: 1; overflow: hidden; }
-        .widget-bar { width: 260px; background: #fff; border-right: 1px solid #ddd; padding: 20px; }
-        .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .widget-grid button { padding: 10px 5px; font-size: 11px; cursor: pointer; border: 1px solid #eee; background: #fafafa; border-radius: 4px; }
-        .widget-grid button:hover { border-color: #ff4d4d; }
+        .widget-bar { width: 220px; background: white; border-right: 1px solid #d1d5db; padding: 20px; }
+        .widget-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .widget-grid button { padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; text-align: left; font-weight: 500; transition: all 0.2s; }
+        .widget-grid button:hover { border-color: #2563eb; background: #eff6ff; }
 
-        .canvas { flex: 1; padding: 40px; overflow-y: auto; display: flex; justify-content: center; }
-        .preview-container { width: 100%; max-width: 800px; background: white; min-height: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 40px; }
+        .canvas { flex: 1; padding: 40px; overflow-y: auto; background: #f1f5f9; display: flex; justify-content: center; }
+        .preview-container { width: 100%; max-width: 900px; background: white; min-height: 100%; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .block-view { position: relative; border: 2px solid transparent; padding: 15px; margin-bottom: 5px; cursor: pointer; }
+        .block-view:hover { border-color: #cbd5e1; border-style: dashed; }
+        .block-view.active { border-color: #2563eb; border-style: solid; background: #f8faff; }
+        .block-label { position: absolute; top: -10px; right: 10px; background: #2563eb; color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+
+        .settings-bar { width: 320px; background: white; border-left: 1px solid #d1d5db; padding: 20px; overflow-y: auto; }
+        .settings-pane label { display: block; margin-top: 15px; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .settings-pane input, .settings-pane textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
+        .del-btn { width: 100%; margin-top: 40px; padding: 12px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; }
         
-        .block-view { position: relative; border: 1px solid transparent; padding: 20px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .block-view:hover { border-color: #ddd; background: #fcfcfc; }
-        .block-view.active { border-color: #ff4d4d; background: #fff5f5; }
-        .block-tag { position: absolute; top: 0; right: 0; font-size: 9px; background: #eee; padding: 2px 6px; color: #999; text-transform: uppercase; }
-
-        .flex-preview { display: flex; gap: 20px; align-items: center; }
-        .flex-preview.img-left { flex-direction: row-reverse; }
-        .flex-preview div { flex: 1; }
-        .flex-preview img { width: 100%; border-radius: 8px; }
-        .full-img { width: 100%; border-radius: 8px; }
-        .gal-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .gal-preview img { width: 100%; aspect-ratio: 1; object-fit: cover; }
-        .cta-preview { text-align: center; background: #f9f9f9; padding: 20px; border-radius: 8px; }
-        .cta-preview button { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; margin-top: 10px; }
-
-        .settings-bar { width: 300px; background: #fff; border-left: 1px solid #ddd; padding: 20px; }
-        .settings-pane label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #666; margin-top: 15px; }
-        .settings-pane input, .settings-pane textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .del-btn { width: 100%; margin-top: 30px; padding: 10px; background: #fee2e2; color: #b91c1c; border: none; border-radius: 4px; cursor: pointer; }
-
-        .login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5; }
-        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; text-align: center; }
-        .login-box input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .login-box button { width: 100%; padding: 12px; background: #ff4d4d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .cta-preview { text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px; }
+        .cta-preview button { background: #1e293b; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; }
+        .video-placeholder { background: #000; color: white; padding: 40px; text-align: center; border-radius: 8px; font-size: 12px; }
+        
+        .login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: #1a1d21; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; width: 350px; text-align: center; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .login-box button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .empty-state { color: #94a3b8; text-align: center; margin-top: 100px; font-size: 18px; }
       `}</style>
     </div>
   );
