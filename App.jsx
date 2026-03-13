@@ -83,13 +83,14 @@ function createDefaultTheme(brand = "mimousek") {
       headingFont: "inherit",
     };
   }
+
   return {
     brand,
     brandName: "Mimoušek",
-    accent: "#d59aa5",
-    accentSoft: "#fbf0f2",
-    text: "#334155",
-    muted: "#64748b",
+    accent: "#9d7a5f",
+    accentSoft: "#f5f0f2",
+    text: "#6e513a",
+    muted: "#8b6a4d",
     bg: "#ffffff",
     cardBg: "#faf7f8",
     radius: "22px",
@@ -99,6 +100,8 @@ function createDefaultTheme(brand = "mimousek") {
 }
 
 const blockCatalog = [
+  { type: "benefitIcons3", label: "Výhody 3 ikony", icon: BadgeCheck },
+  { type: "benefitIcons4", label: "Výhody 4 ikony", icon: BadgeCheck },
   { type: "heroBenefits", label: "Výhody s ikonami", icon: BadgeCheck },
   { type: "textImage", label: "Text a obrázek", icon: Type },
   { type: "text", label: "Text", icon: Type },
@@ -130,8 +133,37 @@ function blockBase(type, title) {
   };
 }
 
+function createBenefitItem(title = "prémiová\nkvalita") {
+  return {
+    imageUrl: "https://placehold.co/180x180?text=Ikona",
+    alt: "Ikona výhody",
+    title,
+  };
+}
+
 function createBlock(type) {
   switch (type) {
+    case "benefitIcons3":
+      return {
+        ...blockBase(type, "Výhody 3 ikony"),
+        items: [
+          createBenefitItem("prémiová\nkvalita"),
+          createBenefitItem("atestované\nmateriály"),
+          createBenefitItem("baby\nfriendly"),
+        ],
+      };
+
+    case "benefitIcons4":
+      return {
+        ...blockBase(type, "Výhody 4 ikony"),
+        items: [
+          createBenefitItem("prémiová\nkvalita"),
+          createBenefitItem("atestované\nmateriály"),
+          createBenefitItem("baby\nfriendly"),
+          createBenefitItem("snímatelný\npotah"),
+        ],
+      };
+
     case "heroBenefits":
       return {
         ...blockBase(type, "Výhody s ikonami"),
@@ -144,6 +176,7 @@ function createBlock(type) {
           { title: "Skvělý dárek", text: "Potěší nastávající i čerstvé rodiče." },
         ],
       };
+
     case "textImage":
       return {
         ...blockBase(type, "Text a obrázek"),
@@ -156,12 +189,14 @@ function createBlock(type) {
         buttonText: "Zjistit více",
         buttonLink: "#",
       };
+
     case "text":
       return {
         ...blockBase(type, "Text"),
         heading: "Textový blok",
         text: "Sem napište delší popis, AI SEO text, produktové informace nebo obsah kategorie. Můžete využít i pro odstavce s klíčovými slovy.",
       };
+
     case "image":
       return {
         ...blockBase(type, "Obrázek"),
@@ -169,6 +204,7 @@ function createBlock(type) {
         imageAlt: "Obrázek",
         caption: "",
       };
+
     case "gallery":
       return {
         ...blockBase(type, "Galerie"),
@@ -179,6 +215,7 @@ function createBlock(type) {
           { url: "https://placehold.co/800x800?text=Foto+3", alt: "Galerie 3" },
         ],
       };
+
     case "faq":
       return {
         ...blockBase(type, "Otázky a odpovědi"),
@@ -189,6 +226,7 @@ function createBlock(type) {
           { q: "Z jakého materiálu je vyroben?", a: "Doplňte vlastní materiálové složení." },
         ],
       };
+
     case "columns":
       return {
         ...blockBase(type, "Sloupce"),
@@ -199,6 +237,7 @@ function createBlock(type) {
           { heading: "Výhoda 3", text: "Popis třetí výhody produktu." },
         ],
       };
+
     case "video":
       return {
         ...blockBase(type, "Video"),
@@ -206,6 +245,7 @@ function createBlock(type) {
         youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         description: "Vložte YouTube video produktu, návodu nebo prezentace.",
       };
+
     case "table":
       return {
         ...blockBase(type, "Tabulka"),
@@ -216,6 +256,7 @@ function createBlock(type) {
           ["Výroba", "Česká republika"],
         ],
       };
+
     case "ctaBanner":
       return {
         ...blockBase(type, "CTA banner"),
@@ -225,6 +266,7 @@ function createBlock(type) {
         buttonText: "Nakoupit nyní",
         buttonLink: "#",
       };
+
     default:
       return blockBase(type, type);
   }
@@ -233,7 +275,7 @@ function createBlock(type) {
 function createTemplate(templateName) {
   if (templateName === "product") {
     return [
-      createBlock("heroBenefits"),
+      createBlock("benefitIcons4"),
       createBlock("textImage"),
       createBlock("columns"),
       createBlock("table"),
@@ -242,24 +284,27 @@ function createTemplate(templateName) {
       createBlock("ctaBanner"),
     ];
   }
+
   if (templateName === "category") {
-    const a = createBlock("textImage");
-    a.heading = "Kategorie plná kvality a pohodlí";
-    const b = createBlock("columns");
-    b.heading = "Proč nakoupit právě u nás";
-    const c = createBlock("gallery");
-    const d = createBlock("faq");
-    return [a, b, c, d, createBlock("ctaBanner")];
+    const a = createBlock("benefitIcons3");
+    const b = createBlock("textImage");
+    b.heading = "Kategorie plná kvality a pohodlí";
+    const c = createBlock("columns");
+    c.heading = "Proč nakoupit právě u nás";
+    const d = createBlock("gallery");
+    const e = createBlock("faq");
+    return [a, b, c, d, e, createBlock("ctaBanner")];
   }
+
   if (templateName === "homepage") {
-    const a = createBlock("heroBenefits");
-    a.heading = "To nejlepší pro maminky i miminka na jednom místě";
+    const a = createBlock("benefitIcons4");
     const b = createBlock("gallery");
     const c = createBlock("textImage");
     const d = createBlock("ctaBanner");
     d.heading = "Objevte nejoblíbenější kolekce";
     return [a, c, b, d];
   }
+
   return [createBlock("textImage")];
 }
 
@@ -269,11 +314,6 @@ function updateBlock(blocks, id, patch) {
 
 function blockSectionStyles(settings, theme) {
   const paddingMap = { small: "16px", medium: "28px", large: "40px" };
-  const containerMap = {
-    default: "max-width:1200px;margin:0 auto;",
-    narrow: "max-width:980px;margin:0 auto;",
-    full: "max-width:100%;margin:0 auto;",
-  };
   const backgroundMap = {
     white: theme.bg,
     muted: theme.cardBg,
@@ -287,7 +327,6 @@ function blockSectionStyles(settings, theme) {
     `background:${backgroundMap[settings?.background || "white"]};`,
     settings?.border ? "border:1px solid #e2e8f0;" : "border:none;",
     settings?.shadow ? "box-shadow:0 12px 30px rgba(15,23,42,.06);" : "box-shadow:none;",
-    settings?.hiddenOnMobile ? "" : "",
   ].join("");
 }
 
@@ -300,13 +339,42 @@ function blockOuterStyles(settings) {
   return containerMap[settings?.container || "default"];
 }
 
+function renderBenefitIconsBlock(block, theme, columns) {
+  return `
+    <div style="display:grid;grid-template-columns:repeat(${columns},minmax(0,1fr));gap:28px;align-items:start;">
+      ${(block.items || [])
+        .map(
+          (item) => `
+          <div style="text-align:center;">
+            <img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.alt)}" style="width:110px;height:110px;object-fit:contain;display:block;margin:0 auto 16px;" />
+            <div style="font-size:20px;line-height:1.35;font-weight:800;color:${theme.text};white-space:pre-line;">${escapeHtml(item.title)}</div>
+          </div>`
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderBlockHtml(block, theme) {
   const sectionStyle = blockSectionStyles(block.settings, theme);
   const outerStyle = blockOuterStyles(block.settings);
   const customClass = block.settings?.customClass ? ` ${escapeHtml(block.settings.customClass)}` : "";
   const anchor = block.anchor ? ` id="${escapeHtml(block.anchor)}"` : "";
 
-  const wrap = (inner) => `\n<section${anchor} class="eshop-block eshop-block-${escapeHtml(block.type)}${customClass}" style="${outerStyle}">\n  <div style="${sectionStyle}">\n    ${inner}\n  </div>\n</section>`;
+  const wrap = (inner) => `
+<section${anchor} class="eshop-block eshop-block-${escapeHtml(block.type)}${customClass}" style="${outerStyle}">
+  <div style="${sectionStyle}">
+    ${inner}
+  </div>
+</section>`;
+
+  if (block.type === "benefitIcons3") {
+    return wrap(renderBenefitIconsBlock(block, theme, 3));
+  }
+
+  if (block.type === "benefitIcons4") {
+    return wrap(renderBenefitIconsBlock(block, theme, 4));
+  }
 
   if (block.type === "heroBenefits") {
     return wrap(`
@@ -328,17 +396,25 @@ function renderBlockHtml(block, theme) {
   }
 
   if (block.type === "textImage") {
-    const imageStyle = block.imageRatio === "portrait" ? "aspect-ratio:4/5;" : block.imageRatio === "landscape" ? "aspect-ratio:16/10;" : "aspect-ratio:1/1;";
+    const imageStyle =
+      block.imageRatio === "portrait"
+        ? "aspect-ratio:4/5;"
+        : block.imageRatio === "landscape"
+          ? "aspect-ratio:16/10;"
+          : "aspect-ratio:1/1;";
+
     const imageCol = `
       <div style="flex:1;min-width:280px;">
         <img src="${escapeHtml(block.imageUrl)}" alt="${escapeHtml(block.imageAlt)}" style="width:100%;${imageStyle}height:auto;border-radius:${theme.radius};display:block;object-fit:cover;" />
       </div>`;
+
     const textCol = `
       <div style="flex:1;min-width:280px;">
         <h2 style="font-size:34px;line-height:1.2;margin:0 0 14px;font-weight:700;color:${theme.text};font-family:${theme.headingFont};">${escapeHtml(block.heading)}</h2>
         <div style="font-size:16px;line-height:1.9;color:${theme.text};">${escapeHtml(block.text).replace(/\n/g, "<br />")}</div>
         ${block.buttonText ? `<div style="margin-top:22px;"><a href="${escapeHtml(block.buttonLink || "#")}" style="display:inline-block;background:${theme.accent};color:${theme.buttonText};text-decoration:none;padding:13px 20px;border-radius:16px;font-weight:700;">${escapeHtml(block.buttonText)}</a></div>` : ""}
       </div>`;
+
     return wrap(`
       <div style="display:flex;gap:34px;align-items:center;flex-wrap:wrap;">
         ${block.imagePosition === "left" ? `${imageCol}${textCol}` : `${textCol}${imageCol}`}
@@ -386,6 +462,7 @@ function renderBlockHtml(block, theme) {
             <p style="margin:10px 0 0;font-size:16px;line-height:1.8;color:${theme.text};">${escapeHtml(item.a)}</p>
           </details>`;
         }
+
         return `
         <div style="border-top:1px solid #e2e8f0;padding:16px 0;">
           <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:${theme.text};">${escapeHtml(item.q)}</h3>
@@ -393,6 +470,7 @@ function renderBlockHtml(block, theme) {
         </div>`;
       })
       .join("");
+
     return wrap(`
       ${block.heading ? `<h2 style="font-size:34px;line-height:1.2;margin:0 0 18px;font-weight:700;color:${theme.text};font-family:${theme.headingFont};">${escapeHtml(block.heading)}</h2>` : ""}
       ${items}
@@ -461,7 +539,7 @@ function renderBlockHtml(block, theme) {
   return "";
 }
 
-function buildExportCss(theme) {
+function buildExportCss() {
   return `<style>
 .eshop-export *{box-sizing:border-box;}
 .eshop-export img{max-width:100%;}
@@ -506,26 +584,42 @@ function BlockSettings({ block, setBlocks, theme }) {
   const patchSettings = (patch) => patchBlock({ settings: { ...block.settings, ...patch } });
 
   if (!block) {
-    return <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-sm text-slate-500">Klikni na blok v náhledu a vpravo se zobrazí jeho nastavení.</div>;
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-sm text-slate-500">
+        Klikni na blok v náhledu a vpravo se zobrazí jeho nastavení.
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6 pb-8 pr-1">
       <Card className="rounded-3xl border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg"><Settings2 className="h-5 w-5" /> Nastavení bloku</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Settings2 className="h-5 w-5" /> Nastavení bloku
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Název bloku">
-            <Input value={block.title || ""} onChange={(e) => patchBlock({ title: e.target.value, anchor: slugify(e.target.value) })} />
+            <Input
+              value={block.title || ""}
+              onChange={(e) => patchBlock({ title: e.target.value, anchor: slugify(e.target.value) })}
+            />
           </Field>
+
           <Field label="Anchor ID">
-            <Input value={block.anchor || ""} onChange={(e) => patchBlock({ anchor: e.target.value })} />
+            <Input
+              value={block.anchor || ""}
+              onChange={(e) => patchBlock({ anchor: e.target.value })}
+            />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Padding">
-              <Select value={block.settings?.padding || "medium"} onValueChange={(value) => patchSettings({ padding: value })}>
+              <Select
+                value={block.settings?.padding || "medium"}
+                onValueChange={(value) => patchSettings({ padding: value })}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="small">Malý</SelectItem>
@@ -534,8 +628,12 @@ function BlockSettings({ block, setBlocks, theme }) {
                 </SelectContent>
               </Select>
             </Field>
+
             <Field label="Pozadí">
-              <Select value={block.settings?.background || "white"} onValueChange={(value) => patchSettings({ background: value })}>
+              <Select
+                value={block.settings?.background || "white"}
+                onValueChange={(value) => patchSettings({ background: value })}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="white">Bílé</SelectItem>
@@ -549,7 +647,10 @@ function BlockSettings({ block, setBlocks, theme }) {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Šířka kontejneru">
-              <Select value={block.settings?.container || "default"} onValueChange={(value) => patchSettings({ container: value })}>
+              <Select
+                value={block.settings?.container || "default"}
+                onValueChange={(value) => patchSettings({ container: value })}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="narrow">Úzká</SelectItem>
@@ -558,69 +659,191 @@ function BlockSettings({ block, setBlocks, theme }) {
                 </SelectContent>
               </Select>
             </Field>
+
             <Field label="Vlastní CSS třída">
-              <Input value={block.settings?.customClass || ""} onChange={(e) => patchSettings({ customClass: e.target.value })} />
+              <Input
+                value={block.settings?.customClass || ""}
+                onChange={(e) => patchSettings({ customClass: e.target.value })}
+              />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center justify-between rounded-2xl border p-3">
               <span>Zaoblené rohy</span>
-              <Switch checked={!!block.settings?.rounded} onCheckedChange={(val) => patchSettings({ rounded: val })} />
+              <Switch
+                checked={!!block.settings?.rounded}
+                onCheckedChange={(val) => patchSettings({ rounded: val })}
+              />
             </div>
+
             <div className="flex items-center justify-between rounded-2xl border p-3">
               <span>Rámeček</span>
-              <Switch checked={!!block.settings?.border} onCheckedChange={(val) => patchSettings({ border: val })} />
+              <Switch
+                checked={!!block.settings?.border}
+                onCheckedChange={(val) => patchSettings({ border: val })}
+              />
             </div>
+
             <div className="flex items-center justify-between rounded-2xl border p-3">
               <span>Stín</span>
-              <Switch checked={!!block.settings?.shadow} onCheckedChange={(val) => patchSettings({ shadow: val })} />
+              <Switch
+                checked={!!block.settings?.shadow}
+                onCheckedChange={(val) => patchSettings({ shadow: val })}
+              />
             </div>
+
             <div className="flex items-center justify-between rounded-2xl border p-3">
               <span>Skrýt na mobilu</span>
-              <Switch checked={!!block.settings?.hiddenOnMobile} onCheckedChange={(val) => patchSettings({ hiddenOnMobile: val })} />
+              <Switch
+                checked={!!block.settings?.hiddenOnMobile}
+                onCheckedChange={(val) => patchSettings({ hiddenOnMobile: val })}
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
       <Card className="rounded-3xl border-0 shadow-sm">
-        <CardHeader><CardTitle className="text-lg">Obsah</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-lg">Obsah</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
-          {block.type === "heroBenefits" && (
+          {(block.type === "benefitIcons3" || block.type === "benefitIcons4") && (
             <>
-              <Field label="Nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
-              <Field label="Podnadpis"><Textarea value={block.subheading || ""} onChange={(e) => patchBlock({ subheading: e.target.value })} /></Field>
               {(block.items || []).map((item, index) => (
                 <div key={index} className="rounded-2xl border p-4 space-y-3">
-                  <Field label="Titulek"><Input value={item.title} onChange={(e) => {
-                    const next = [...block.items]; next[index] = { ...next[index], title: e.target.value }; patchBlock({ items: next });
-                  }} /></Field>
-                  <Field label="Text"><Textarea value={item.text} onChange={(e) => {
-                    const next = [...block.items]; next[index] = { ...next[index], text: e.target.value }; patchBlock({ items: next });
-                  }} /></Field>
+                  <Field label={`URL obrázku ${index + 1}`}>
+                    <Input
+                      value={item.imageUrl || ""}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], imageUrl: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
+
+                  <Field label={`ALT obrázku ${index + 1}`}>
+                    <Input
+                      value={item.alt || ""}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], alt: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
+
+                  <Field label={`Text výhody ${index + 1}`}>
+                    <Textarea
+                      value={item.title || ""}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], title: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
                 </div>
               ))}
-              <Button variant="outline" onClick={() => patchBlock({ items: [...(block.items || []), { title: "", text: "" }] })}><Plus className="mr-2 h-4 w-4" /> Přidat výhodu</Button>
+            </>
+          )}
+
+          {block.type === "heroBenefits" && (
+            <>
+              <Field label="Nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Podnadpis">
+                <Textarea
+                  value={block.subheading || ""}
+                  onChange={(e) => patchBlock({ subheading: e.target.value })}
+                />
+              </Field>
+
+              {(block.items || []).map((item, index) => (
+                <div key={index} className="rounded-2xl border p-4 space-y-3">
+                  <Field label="Titulek">
+                    <Input
+                      value={item.title}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], title: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
+
+                  <Field label="Text">
+                    <Textarea
+                      value={item.text}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], text: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
+                </div>
+              ))}
+
+              <Button
+                variant="outline"
+                onClick={() => patchBlock({ items: [...(block.items || []), { title: "", text: "" }] })}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Přidat výhodu
+              </Button>
             </>
           )}
 
           {(block.type === "textImage" || block.type === "text") && (
             <>
-              <Field label="Nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
-              <Field label="Text"><Textarea className="min-h-[180px]" value={block.text || ""} onChange={(e) => patchBlock({ text: e.target.value })} /></Field>
+              <Field label="Nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Text">
+                <Textarea
+                  className="min-h-[180px]"
+                  value={block.text || ""}
+                  onChange={(e) => patchBlock({ text: e.target.value })}
+                />
+              </Field>
             </>
           )}
 
           {block.type === "textImage" && (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="URL obrázku"><Input value={block.imageUrl || ""} onChange={(e) => patchBlock({ imageUrl: e.target.value })} /></Field>
-                <Field label="Alt obrázku"><Input value={block.imageAlt || ""} onChange={(e) => patchBlock({ imageAlt: e.target.value })} /></Field>
+                <Field label="URL obrázku">
+                  <Input
+                    value={block.imageUrl || ""}
+                    onChange={(e) => patchBlock({ imageUrl: e.target.value })}
+                  />
+                </Field>
+
+                <Field label="Alt obrázku">
+                  <Input
+                    value={block.imageAlt || ""}
+                    onChange={(e) => patchBlock({ imageAlt: e.target.value })}
+                  />
+                </Field>
               </div>
+
               <div className="grid grid-cols-3 gap-3">
                 <Field label="Pozice obrázku">
-                  <Select value={block.imagePosition || "right"} onValueChange={(value) => patchBlock({ imagePosition: value })}>
+                  <Select
+                    value={block.imagePosition || "right"}
+                    onValueChange={(value) => patchBlock({ imagePosition: value })}
+                  >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="left">Vlevo</SelectItem>
@@ -628,8 +851,12 @@ function BlockSettings({ block, setBlocks, theme }) {
                     </SelectContent>
                   </Select>
                 </Field>
+
                 <Field label="Poměr obrázku">
-                  <Select value={block.imageRatio || "square"} onValueChange={(value) => patchBlock({ imageRatio: value })}>
+                  <Select
+                    value={block.imageRatio || "square"}
+                    onValueChange={(value) => patchBlock({ imageRatio: value })}
+                  >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="square">Čtverec</SelectItem>
@@ -638,104 +865,292 @@ function BlockSettings({ block, setBlocks, theme }) {
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Text tlačítka"><Input value={block.buttonText || ""} onChange={(e) => patchBlock({ buttonText: e.target.value })} /></Field>
+
+                <Field label="Text tlačítka">
+                  <Input
+                    value={block.buttonText || ""}
+                    onChange={(e) => patchBlock({ buttonText: e.target.value })}
+                  />
+                </Field>
               </div>
-              <Field label="Odkaz tlačítka"><Input value={block.buttonLink || ""} onChange={(e) => patchBlock({ buttonLink: e.target.value })} /></Field>
+
+              <Field label="Odkaz tlačítka">
+                <Input
+                  value={block.buttonLink || ""}
+                  onChange={(e) => patchBlock({ buttonLink: e.target.value })}
+                />
+              </Field>
             </>
           )}
 
           {block.type === "image" && (
             <>
-              <Field label="URL obrázku"><Input value={block.imageUrl || ""} onChange={(e) => patchBlock({ imageUrl: e.target.value })} /></Field>
-              <Field label="Alt obrázku"><Input value={block.imageAlt || ""} onChange={(e) => patchBlock({ imageAlt: e.target.value })} /></Field>
-              <Field label="Popisek"><Input value={block.caption || ""} onChange={(e) => patchBlock({ caption: e.target.value })} /></Field>
+              <Field label="URL obrázku">
+                <Input
+                  value={block.imageUrl || ""}
+                  onChange={(e) => patchBlock({ imageUrl: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Alt obrázku">
+                <Input
+                  value={block.imageAlt || ""}
+                  onChange={(e) => patchBlock({ imageAlt: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Popisek">
+                <Input
+                  value={block.caption || ""}
+                  onChange={(e) => patchBlock({ caption: e.target.value })}
+                />
+              </Field>
             </>
           )}
 
           {block.type === "gallery" && (
             <>
-              <Field label="Nadpis galerie"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
+              <Field label="Nadpis galerie">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
               {(block.images || []).map((img, index) => (
                 <div key={index} className="grid grid-cols-2 gap-3 rounded-2xl border p-4">
-                  <Field label="URL"><Input value={img.url} onChange={(e) => {
-                    const next = [...block.images]; next[index] = { ...next[index], url: e.target.value }; patchBlock({ images: next });
-                  }} /></Field>
-                  <Field label="Alt"><Input value={img.alt} onChange={(e) => {
-                    const next = [...block.images]; next[index] = { ...next[index], alt: e.target.value }; patchBlock({ images: next });
-                  }} /></Field>
+                  <Field label="URL">
+                    <Input
+                      value={img.url}
+                      onChange={(e) => {
+                        const next = [...block.images];
+                        next[index] = { ...next[index], url: e.target.value };
+                        patchBlock({ images: next });
+                      }}
+                    />
+                  </Field>
+
+                  <Field label="Alt">
+                    <Input
+                      value={img.alt}
+                      onChange={(e) => {
+                        const next = [...block.images];
+                        next[index] = { ...next[index], alt: e.target.value };
+                        patchBlock({ images: next });
+                      }}
+                    />
+                  </Field>
                 </div>
               ))}
-              <Button variant="outline" onClick={() => patchBlock({ images: [...(block.images || []), { url: "", alt: "" }] })}><Plus className="mr-2 h-4 w-4" /> Přidat obrázek</Button>
+
+              <Button
+                variant="outline"
+                onClick={() => patchBlock({ images: [...(block.images || []), { url: "", alt: "" }] })}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Přidat obrázek
+              </Button>
             </>
           )}
 
           {block.type === "video" && (
             <>
-              <Field label="Nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
-              <Field label="YouTube URL"><Input value={block.youtubeUrl || ""} onChange={(e) => patchBlock({ youtubeUrl: e.target.value })} /></Field>
-              <Field label="Popis"><Textarea value={block.description || ""} onChange={(e) => patchBlock({ description: e.target.value })} /></Field>
+              <Field label="Nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
+              <Field label="YouTube URL">
+                <Input
+                  value={block.youtubeUrl || ""}
+                  onChange={(e) => patchBlock({ youtubeUrl: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Popis">
+                <Textarea
+                  value={block.description || ""}
+                  onChange={(e) => patchBlock({ description: e.target.value })}
+                />
+              </Field>
             </>
           )}
 
           {block.type === "faq" && (
             <>
-              <Field label="Nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
+              <Field label="Nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
               <div className="flex items-center justify-between rounded-2xl border p-3 text-sm">
                 <span>Rozbalovací FAQ</span>
-                <Switch checked={!!block.accordion} onCheckedChange={(val) => patchBlock({ accordion: val })} />
+                <Switch
+                  checked={!!block.accordion}
+                  onCheckedChange={(val) => patchBlock({ accordion: val })}
+                />
               </div>
+
               {(block.items || []).map((item, index) => (
                 <div key={index} className="rounded-2xl border p-4 space-y-3">
-                  <Field label="Otázka"><Input value={item.q} onChange={(e) => {
-                    const next = [...block.items]; next[index] = { ...next[index], q: e.target.value }; patchBlock({ items: next });
-                  }} /></Field>
-                  <Field label="Odpověď"><Textarea value={item.a} onChange={(e) => {
-                    const next = [...block.items]; next[index] = { ...next[index], a: e.target.value }; patchBlock({ items: next });
-                  }} /></Field>
+                  <Field label="Otázka">
+                    <Input
+                      value={item.q}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], q: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
+
+                  <Field label="Odpověď">
+                    <Textarea
+                      value={item.a}
+                      onChange={(e) => {
+                        const next = [...block.items];
+                        next[index] = { ...next[index], a: e.target.value };
+                        patchBlock({ items: next });
+                      }}
+                    />
+                  </Field>
                 </div>
               ))}
-              <Button variant="outline" onClick={() => patchBlock({ items: [...(block.items || []), { q: "", a: "" }] })}><Plus className="mr-2 h-4 w-4" /> Přidat otázku</Button>
+
+              <Button
+                variant="outline"
+                onClick={() => patchBlock({ items: [...(block.items || []), { q: "", a: "" }] })}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Přidat otázku
+              </Button>
             </>
           )}
 
           {block.type === "columns" && (
             <>
-              <Field label="Nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
+              <Field label="Nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
               {(block.columns || []).map((col, index) => (
                 <div key={index} className="rounded-2xl border p-4 space-y-3">
-                  <Field label="Nadpis sloupce"><Input value={col.heading} onChange={(e) => {
-                    const next = [...block.columns]; next[index] = { ...next[index], heading: e.target.value }; patchBlock({ columns: next });
-                  }} /></Field>
-                  <Field label="Text"><Textarea value={col.text} onChange={(e) => {
-                    const next = [...block.columns]; next[index] = { ...next[index], text: e.target.value }; patchBlock({ columns: next });
-                  }} /></Field>
+                  <Field label="Nadpis sloupce">
+                    <Input
+                      value={col.heading}
+                      onChange={(e) => {
+                        const next = [...block.columns];
+                        next[index] = { ...next[index], heading: e.target.value };
+                        patchBlock({ columns: next });
+                      }}
+                    />
+                  </Field>
+
+                  <Field label="Text">
+                    <Textarea
+                      value={col.text}
+                      onChange={(e) => {
+                        const next = [...block.columns];
+                        next[index] = { ...next[index], text: e.target.value };
+                        patchBlock({ columns: next });
+                      }}
+                    />
+                  </Field>
                 </div>
               ))}
-              <Button variant="outline" onClick={() => patchBlock({ columns: [...(block.columns || []), { heading: "", text: "" }] })}><Plus className="mr-2 h-4 w-4" /> Přidat sloupec</Button>
+
+              <Button
+                variant="outline"
+                onClick={() => patchBlock({ columns: [...(block.columns || []), { heading: "", text: "" }] })}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Přidat sloupec
+              </Button>
             </>
           )}
 
           {block.type === "table" && (
             <>
-              <Field label="Nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
+              <Field label="Nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
               {(block.rows || []).map((row, index) => (
                 <div key={index} className="grid grid-cols-2 gap-3">
-                  <Input value={row[0]} onChange={(e) => { const next = [...block.rows]; next[index] = [e.target.value, next[index][1]]; patchBlock({ rows: next }); }} placeholder="Název parametru" />
-                  <Input value={row[1]} onChange={(e) => { const next = [...block.rows]; next[index] = [next[index][0], e.target.value]; patchBlock({ rows: next }); }} placeholder="Hodnota" />
+                  <Input
+                    value={row[0]}
+                    onChange={(e) => {
+                      const next = [...block.rows];
+                      next[index] = [e.target.value, next[index][1]];
+                      patchBlock({ rows: next });
+                    }}
+                    placeholder="Název parametru"
+                  />
+                  <Input
+                    value={row[1]}
+                    onChange={(e) => {
+                      const next = [...block.rows];
+                      next[index] = [next[index][0], e.target.value];
+                      patchBlock({ rows: next });
+                    }}
+                    placeholder="Hodnota"
+                  />
                 </div>
               ))}
-              <Button variant="outline" onClick={() => patchBlock({ rows: [...(block.rows || []), ["", ""]] })}><Plus className="mr-2 h-4 w-4" /> Přidat řádek</Button>
+
+              <Button
+                variant="outline"
+                onClick={() => patchBlock({ rows: [...(block.rows || []), ["", ""]] })}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Přidat řádek
+              </Button>
             </>
           )}
 
           {block.type === "ctaBanner" && (
             <>
-              <Field label="Malý titulek"><Input value={block.eyebrow || ""} onChange={(e) => patchBlock({ eyebrow: e.target.value })} /></Field>
-              <Field label="Hlavní nadpis"><Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} /></Field>
-              <Field label="Text"><Textarea value={block.text || ""} onChange={(e) => patchBlock({ text: e.target.value })} /></Field>
+              <Field label="Malý titulek">
+                <Input
+                  value={block.eyebrow || ""}
+                  onChange={(e) => patchBlock({ eyebrow: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Hlavní nadpis">
+                <Input
+                  value={block.heading || ""}
+                  onChange={(e) => patchBlock({ heading: e.target.value })}
+                />
+              </Field>
+
+              <Field label="Text">
+                <Textarea
+                  value={block.text || ""}
+                  onChange={(e) => patchBlock({ text: e.target.value })}
+                />
+              </Field>
+
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Text tlačítka"><Input value={block.buttonText || ""} onChange={(e) => patchBlock({ buttonText: e.target.value })} /></Field>
-                <Field label="Odkaz tlačítka"><Input value={block.buttonLink || ""} onChange={(e) => patchBlock({ buttonLink: e.target.value })} /></Field>
+                <Field label="Text tlačítka">
+                  <Input
+                    value={block.buttonText || ""}
+                    onChange={(e) => patchBlock({ buttonText: e.target.value })}
+                  />
+                </Field>
+
+                <Field label="Odkaz tlačítka">
+                  <Input
+                    value={block.buttonLink || ""}
+                    onChange={(e) => patchBlock({ buttonLink: e.target.value })}
+                  />
+                </Field>
               </div>
             </>
           )}
@@ -744,9 +1159,11 @@ function BlockSettings({ block, setBlocks, theme }) {
 
       <Card className="rounded-3xl border-0 shadow-sm bg-slate-900 text-white">
         <CardContent className="p-5 text-sm">
-          <div className="font-semibold mb-2">Aktivní brand styl</div>
+          <div className="mb-2 font-semibold">Aktivní brand styl</div>
           <div className="space-y-1 text-slate-300">
-            <div>Barva značky: <span style={{ color: theme.accent }}>{theme.accent}</span></div>
+            <div>
+              Barva značky: <span style={{ color: theme.accent }}>{theme.accent}</span>
+            </div>
             <div>Značka: {theme.brandName}</div>
           </div>
         </CardContent>
@@ -765,11 +1182,12 @@ export default function EshopTextBuilderPro() {
   const [draggedId, setDraggedId] = useState(null);
 
   useEffect(() => {
-    if (!selectedId && blocks[0]?.id) setSelectedId(blocks[0].id);
+    if (!selectedId && blocks[0]?.id) {
+      setSelectedId(blocks[0].id);
+    }
   }, [blocks, selectedId]);
 
   const selectedBlock = blocks.find((block) => block.id === selectedId) || null;
-
   const generatedHtml = useMemo(() => buildExportHtml(blocks, theme, includeCss), [blocks, theme, includeCss]);
 
   const addBlock = (type) => {
@@ -779,16 +1197,25 @@ export default function EshopTextBuilderPro() {
   };
 
   const deleteBlock = (id) => {
+    const target = blocks.find((block) => block.id === id);
+    const ok = window.confirm(`Opravdu smazat blok „${target?.title || "bez názvu"}“?`);
+    if (!ok) return;
+
     const next = blocks.filter((block) => block.id !== id);
     setBlocks(next);
-    if (selectedId === id) setSelectedId(next[0]?.id || null);
+
+    if (selectedId === id) {
+      setSelectedId(next[0]?.id || null);
+    }
   };
 
   const moveBlock = (id, direction) => {
     const index = blocks.findIndex((block) => block.id === id);
     if (index < 0) return;
+
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= blocks.length) return;
+
     const next = [...blocks];
     [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
     setBlocks(next);
@@ -797,8 +1224,15 @@ export default function EshopTextBuilderPro() {
   const duplicateBlock = (id) => {
     const index = blocks.findIndex((b) => b.id === id);
     if (index === -1) return;
+
     const original = blocks[index];
-    const copy = { ...structuredClone(original), id: crypto.randomUUID(), title: `${original.title} kopie`, anchor: slugify(`${original.title}-kopie`) };
+    const copy = {
+      ...structuredClone(original),
+      id: crypto.randomUUID(),
+      title: `${original.title} kopie`,
+      anchor: slugify(`${original.title}-kopie`),
+    };
+
     const next = [...blocks];
     next.splice(index + 1, 0, copy);
     setBlocks(next);
@@ -806,11 +1240,14 @@ export default function EshopTextBuilderPro() {
 
   const moveBlockToIndex = (fromId, toId) => {
     if (!fromId || !toId || fromId === toId) return;
+
     setBlocks((prev) => {
       const next = [...prev];
       const fromIndex = next.findIndex((b) => b.id === fromId);
       const toIndex = next.findIndex((b) => b.id === toId);
+
       if (fromIndex === -1 || toIndex === -1) return prev;
+
       const [moved] = next.splice(fromIndex, 1);
       next.splice(toIndex, 0, moved);
       return next;
@@ -818,7 +1255,9 @@ export default function EshopTextBuilderPro() {
   };
 
   const handleDragStart = (id) => setDraggedId(id);
+
   const handleDragEnd = () => setDraggedId(null);
+
   const handleDropOnBlock = (targetId) => {
     moveBlockToIndex(draggedId, targetId);
     setDraggedId(null);
@@ -841,7 +1280,11 @@ export default function EshopTextBuilderPro() {
 
   const loadProject = () => {
     const raw = localStorage.getItem("eshop-builder-project");
-    if (!raw) return alert("V prohlížeči není uložen žádný projekt.");
+    if (!raw) {
+      alert("V prohlížeči není uložen žádný projekt.");
+      return;
+    }
+
     try {
       const payload = JSON.parse(raw);
       setProjectName(payload.projectName || "projekt");
@@ -868,7 +1311,10 @@ export default function EshopTextBuilderPro() {
   };
 
   const exportJson = () => {
-    const blob = new Blob([JSON.stringify({ projectName, pageType, theme, includeCss, blocks }, null, 2)], { type: "application/json" });
+    const blob = new Blob(
+      [JSON.stringify({ projectName, pageType, theme, includeCss, blocks }, null, 2)],
+      { type: "application/json" }
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -883,15 +1329,46 @@ export default function EshopTextBuilderPro() {
         <div className="rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 px-6 py-5 text-white shadow-lg">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <Badge className="mb-3 rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/10">Profesionální builder obsahových bloků</Badge>
-              <h1 className="text-2xl font-bold md:text-3xl">Pomocník pro kódování textů a bloků na e-shop</h1>
-              <p className="mt-2 max-w-4xl text-sm text-slate-300 md:text-base">Profesionální rozhraní pro produktové a kategoriové popisky. Vkládáš texty, obrázky, galerie, FAQ, tabulky, CTA bannery i YouTube videa. Na konci dostaneš hotové HTML pro Shoptet.</p>
+              <Badge className="mb-3 rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/10">
+                Profesionální builder obsahových bloků
+              </Badge>
+              <h1 className="text-2xl font-bold md:text-3xl">
+                Pomocník pro kódování textů a bloků na e-shop
+              </h1>
+              <p className="mt-2 max-w-4xl text-sm text-slate-300 md:text-base">
+                Profesionální rozhraní pro produktové a kategoriové popisky. Vkládáš texty, obrázky, galerie,
+                FAQ, tabulky, CTA bannery i YouTube videa. Na konci dostaneš hotové HTML pro Shoptet.
+              </p>
             </div>
+
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100" onClick={saveProject}><Save className="mr-2 h-4 w-4" /> Uložit</Button>
-              <Button variant="secondary" className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100" onClick={loadProject}><LayoutTemplate className="mr-2 h-4 w-4" /> Načíst</Button>
-              <Button variant="secondary" className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100" onClick={exportJson}><Download className="mr-2 h-4 w-4" /> JSON</Button>
-              <Button className="rounded-2xl" onClick={() => copyToClipboard()}><Copy className="mr-2 h-4 w-4" /> Kopírovat HTML</Button>
+              <Button
+                variant="secondary"
+                className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100"
+                onClick={saveProject}
+              >
+                <Save className="mr-2 h-4 w-4" /> Uložit
+              </Button>
+
+              <Button
+                variant="secondary"
+                className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100"
+                onClick={loadProject}
+              >
+                <LayoutTemplate className="mr-2 h-4 w-4" /> Načíst
+              </Button>
+
+              <Button
+                variant="secondary"
+                className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100"
+                onClick={exportJson}
+              >
+                <Download className="mr-2 h-4 w-4" /> JSON
+              </Button>
+
+              <Button className="rounded-2xl" onClick={() => copyToClipboard()}>
+                <Copy className="mr-2 h-4 w-4" /> Kopírovat HTML
+              </Button>
             </div>
           </div>
         </div>
@@ -899,9 +1376,14 @@ export default function EshopTextBuilderPro() {
         <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_430px]">
           <div className="space-y-4">
             <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader><CardTitle className="text-lg">Projekt</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-lg">Projekt</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
-                <Field label="Název projektu"><Input value={projectName} onChange={(e) => setProjectName(e.target.value)} /></Field>
+                <Field label="Název projektu">
+                  <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                </Field>
+
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Typ stránky">
                     <Select value={pageType} onValueChange={(value) => setPageType(value)}>
@@ -913,6 +1395,7 @@ export default function EshopTextBuilderPro() {
                       </SelectContent>
                     </Select>
                   </Field>
+
                   <Field label="Brand styl">
                     <Select value={theme.brand} onValueChange={(value) => setTheme(createDefaultTheme(value))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
@@ -925,12 +1408,21 @@ export default function EshopTextBuilderPro() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Accent barva"><Input value={theme.accent} onChange={(e) => setTheme((t) => ({ ...t, accent: e.target.value }))} /></Field>
-                  <Field label="Jemné pozadí"><Input value={theme.accentSoft} onChange={(e) => setTheme((t) => ({ ...t, accentSoft: e.target.value }))} /></Field>
+                  <Field label="Accent barva">
+                    <Input value={theme.accent} onChange={(e) => setTheme((t) => ({ ...t, accent: e.target.value }))} />
+                  </Field>
+                  <Field label="Jemné pozadí">
+                    <Input value={theme.accentSoft} onChange={(e) => setTheme((t) => ({ ...t, accentSoft: e.target.value }))} />
+                  </Field>
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Text"><Input value={theme.text} onChange={(e) => setTheme((t) => ({ ...t, text: e.target.value }))} /></Field>
-                  <Field label="Radius"><Input value={theme.radius} onChange={(e) => setTheme((t) => ({ ...t, radius: e.target.value }))} /></Field>
+                  <Field label="Text">
+                    <Input value={theme.text} onChange={(e) => setTheme((t) => ({ ...t, text: e.target.value }))} />
+                  </Field>
+                  <Field label="Radius">
+                    <Input value={theme.radius} onChange={(e) => setTheme((t) => ({ ...t, radius: e.target.value }))} />
+                  </Field>
                 </div>
 
                 <div className="flex items-center justify-between rounded-2xl border p-3 text-sm">
@@ -939,23 +1431,36 @@ export default function EshopTextBuilderPro() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" className="rounded-2xl" onClick={() => applyTemplate(pageType)}><Sparkles className="mr-2 h-4 w-4" /> Šablona</Button>
-                  <Button variant="outline" className="rounded-2xl" onClick={resetProject}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
+                  <Button variant="outline" className="rounded-2xl" onClick={() => applyTemplate(pageType)}>
+                    <Sparkles className="mr-2 h-4 w-4" /> Šablona
+                  </Button>
+
+                  <Button variant="outline" className="rounded-2xl" onClick={resetProject}>
+                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                  </Button>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader><CardTitle className="text-lg">Přidat blok</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-lg">Přidat blok</CardTitle>
+              </CardHeader>
               <CardContent>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="w-full rounded-2xl"><Plus className="mr-2 h-4 w-4" /> Nový blok</Button>
+                    <Button className="w-full rounded-2xl">
+                      <Plus className="mr-2 h-4 w-4" /> Nový blok
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-5xl rounded-3xl">
-                    <DialogHeader><DialogTitle>Obsahové bloky</DialogTitle></DialogHeader>
+                    <DialogHeader>
+                      <DialogTitle>Obsahové bloky</DialogTitle>
+                    </DialogHeader>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                      {blockCatalog.map((item) => <CatalogButton key={item.type} item={item} onAdd={addBlock} />)}
+                      {blockCatalog.map((item) => (
+                        <CatalogButton key={item.type} item={item} onAdd={addBlock} />
+                      ))}
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -963,26 +1468,55 @@ export default function EshopTextBuilderPro() {
             </Card>
 
             <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader><CardTitle className="text-lg">Bloky</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-lg">Bloky</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-3">
                 {blocks.map((block, index) => {
                   const Icon = blockCatalog.find((i) => i.type === block.type)?.icon || Type;
+
                   return (
-                    <button key={block.id} draggable onDragStart={() => handleDragStart(block.id)} onDragEnd={handleDragEnd} onDragOver={(e) => e.preventDefault()} onDrop={() => handleDropOnBlock(block.id)} onClick={() => setSelectedId(block.id)} className={`w-full rounded-2xl border p-4 text-left transition ${selectedId === block.id ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white hover:border-slate-300"} ${draggedId === block.id ? "opacity-60" : "opacity-100"}`}>
+                    <button
+                      key={block.id}
+                      draggable
+                      onDragStart={() => handleDragStart(block.id)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => handleDropOnBlock(block.id)}
+                      onClick={() => setSelectedId(block.id)}
+                      className={`w-full rounded-2xl border p-4 text-left transition ${
+                        selectedId === block.id
+                          ? "border-slate-900 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white hover:border-slate-300"
+                      } ${draggedId === block.id ? "opacity-60" : "opacity-100"}`}
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex gap-3">
                           <GripVertical className="mt-0.5 h-4 w-4 opacity-60" />
                           <div>
-                            <div className="flex items-center gap-2 font-semibold"><Icon className="h-4 w-4" /> {block.title || block.type}</div>
-                            <div className={`mt-1 text-xs ${selectedId === block.id ? "text-slate-300" : "text-slate-500"}`}>#{index + 1} · {block.type}</div>
+                            <div className="flex items-center gap-2 font-semibold">
+                              <Icon className="h-4 w-4" /> {block.title || block.type}
+                            </div>
+                            <div className={`mt-1 text-xs ${selectedId === block.id ? "text-slate-300" : "text-slate-500"}`}>
+                              #{index + 1} · {block.type}
+                            </div>
                           </div>
                         </div>
                       </div>
+
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }}>↑</Button>
-                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }}>↓</Button>
-                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}>Dupl.</Button>
-                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}><Trash2 className="h-4 w-4" /></Button>
+                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }}>
+                          ↑
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }}>
+                          ↓
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}>
+                          Dupl.
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl" onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </button>
                   );
@@ -1001,20 +1535,50 @@ export default function EshopTextBuilderPro() {
                 <div className="rounded-[28px] border-2 border-dashed border-slate-200 bg-white p-4 md:p-6">
                   <div className="space-y-4">
                     {blocks.map((block, index) => (
-                      <div key={block.id} draggable onDragStart={() => handleDragStart(block.id)} onDragEnd={handleDragEnd} onDragOver={(e) => e.preventDefault()} onDrop={() => handleDropOnBlock(block.id)} onClick={() => setSelectedId(block.id)} className={`cursor-pointer rounded-[24px] border-2 p-3 transition ${selectedId === block.id ? "border-sky-400 bg-sky-50" : "border-slate-200 hover:border-slate-300"} ${draggedId === block.id ? "opacity-60" : "opacity-100"}`}>
-                        <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-slate-500">
-                          <Badge variant="outline" className="rounded-full">{blockCatalog.find((i) => i.type === block.type)?.label || block.type}</Badge>
-                          <span>#{index + 1}</span>
-                          <span>{block.title}</span>
+                      <div
+                        key={block.id}
+                        draggable
+                        onDragStart={() => handleDragStart(block.id)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropOnBlock(block.id)}
+                        onClick={() => setSelectedId(block.id)}
+                        className={`cursor-pointer rounded-[24px] border-2 p-3 transition ${
+                          selectedId === block.id
+                            ? "border-sky-400 bg-sky-50"
+                            : "border-slate-200 hover:border-slate-300"
+                        } ${draggedId === block.id ? "opacity-60" : "opacity-100"}`}
+                      >
+                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="rounded-full">
+                              {blockCatalog.find((i) => i.type === block.type)?.label || block.type}
+                            </Badge>
+                            <span>#{index + 1}</span>
+                            <span>{block.title}</span>
                           </div>
+
                           <div className="flex flex-wrap gap-2">
-                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }}>↑</Button>
-                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }}>↓</Button>
-                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}>Dupl.</Button>
-                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}>Smazat</Button>
+                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }}>
+                              ↑
+                            </Button>
+                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }}>
+                              ↓
+                            </Button>
+                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}>
+                              Dupl.
+                            </Button>
+                            <Button type="button" size="sm" variant="outline" className="h-8 rounded-xl bg-white" onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}>
+                              Smazat
+                            </Button>
                           </div>
                         </div>
-                        <div dangerouslySetInnerHTML={{ __html: renderBlockHtml(block, theme) }} />
+
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: renderBlockHtml(block, theme),
+                          }}
+                        />
                       </div>
                     ))}
                   </div>
@@ -1023,24 +1587,46 @@ export default function EshopTextBuilderPro() {
             </Card>
 
             <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Wand2 className="h-5 w-5" /> Export</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Wand2 className="h-5 w-5" /> Export
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <Tabs defaultValue="preview">
                   <TabsList className="grid w-full grid-cols-3 rounded-2xl">
-                    <TabsTrigger value="preview"><Eye className="mr-2 h-4 w-4" /> Náhled</TabsTrigger>
-                    <TabsTrigger value="html"><Code2 className="mr-2 h-4 w-4" /> HTML</TabsTrigger>
-                    <TabsTrigger value="shoptet"><Sparkles className="mr-2 h-4 w-4" /> Shoptet</TabsTrigger>
+                    <TabsTrigger value="preview">
+                      <Eye className="mr-2 h-4 w-4" /> Náhled
+                    </TabsTrigger>
+                    <TabsTrigger value="html">
+                      <Code2 className="mr-2 h-4 w-4" /> HTML
+                    </TabsTrigger>
+                    <TabsTrigger value="shoptet">
+                      <Sparkles className="mr-2 h-4 w-4" /> Shoptet
+                    </TabsTrigger>
                   </TabsList>
+
                   <TabsContent value="preview" className="mt-4">
-                    <div className="rounded-2xl border bg-white p-5"><div dangerouslySetInnerHTML={{ __html: generatedHtml }} /></div>
+                    <div className="rounded-2xl border bg-white p-5">
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: generatedHtml,
+                        }}
+                      />
+                    </div>
                   </TabsContent>
+
                   <TabsContent value="html" className="mt-4">
                     <Textarea className="min-h-[460px] rounded-2xl font-mono text-sm" readOnly value={generatedHtml} />
-                    <Button className="mt-3 w-full rounded-2xl" onClick={() => copyToClipboard(generatedHtml)}><Copy className="mr-2 h-4 w-4" /> Kopírovat kompletní HTML</Button>
+                    <Button className="mt-3 w-full rounded-2xl" onClick={() => copyToClipboard(generatedHtml)}>
+                      <Copy className="mr-2 h-4 w-4" /> Kopírovat kompletní HTML
+                    </Button>
                   </TabsContent>
+
                   <TabsContent value="shoptet" className="mt-4">
                     <div className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-600">
-                      Tento export je připravený pro vložení do Shoptet editoru nebo do vlastního HTML bloku. U složitějších stránek doporučeno ponechat zapnuté exportní CSS.
+                      Tento export je připravený pro vložení do Shoptet editoru nebo do vlastního HTML bloku.
+                      U složitějších stránek doporučeno ponechat zapnuté exportní CSS.
                     </div>
                     <Textarea className="mt-4 min-h-[420px] rounded-2xl font-mono text-sm" readOnly value={generatedHtml} />
                   </TabsContent>
@@ -1049,7 +1635,9 @@ export default function EshopTextBuilderPro() {
             </Card>
           </div>
 
-          <ScrollArea className="h-[calc(100vh-120px)] rounded-3xl"><BlockSettings block={selectedBlock} setBlocks={setBlocks} theme={theme} /></ScrollArea>
+          <ScrollArea className="h-[calc(100vh-120px)] rounded-3xl">
+            <BlockSettings block={selectedBlock} setBlocks={setBlocks} theme={theme} />
+          </ScrollArea>
         </div>
       </div>
     </div>
