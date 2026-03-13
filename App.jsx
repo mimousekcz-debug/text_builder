@@ -46,7 +46,6 @@ function createDefaultTheme(brand = "mimousek") {
       cardBg: "#f8fafc",
       radius: "22px",
       buttonText: "#ffffff",
-      headingFont: "inherit",
     };
   }
 
@@ -61,14 +60,12 @@ function createDefaultTheme(brand = "mimousek") {
     cardBg: "#faf7f8",
     radius: "22px",
     buttonText: "#ffffff",
-    headingFont: "inherit",
   };
 }
 
 const blockCatalog = [
   { type: "benefitIcons3", label: "Výhody 3 ikony" },
   { type: "benefitIcons4", label: "Výhody 4 ikony" },
-  { type: "heroBenefits", label: "Výhody s ikonami" },
   { type: "textImage", label: "Text a obrázek" },
   { type: "text", label: "Text" },
   { type: "image", label: "Obrázek" },
@@ -127,19 +124,6 @@ function createBlock(type) {
           createBenefitItem("atestované\nmateriály"),
           createBenefitItem("baby\nfriendly"),
           createBenefitItem("snímatelný\npotah"),
-        ],
-      };
-
-    case "heroBenefits":
-      return {
-        ...blockBase(type, "Výhody s ikonami"),
-        heading: "Proč si produkt zamilujete",
-        subheading: "Přehled hlavních výhod nahoře nad popisem.",
-        items: [
-          { title: "Česká výroba", text: "Pečlivě šito s důrazem na kvalitu." },
-          { title: "Jemné materiály", text: "Příjemné na dotek pro každodenní použití." },
-          { title: "Praktické využití", text: "Krása i funkčnost v jednom." },
-          { title: "Skvělý dárek", text: "Potěší nastávající i čerstvé rodiče." },
         ],
       };
 
@@ -337,25 +321,6 @@ function renderBlockHtml(block, theme) {
   if (block.type === "benefitIcons3") return wrap(renderBenefitIconsBlock(block, theme, 3));
   if (block.type === "benefitIcons4") return wrap(renderBenefitIconsBlock(block, theme, 4));
 
-  if (block.type === "heroBenefits") {
-    return wrap(`
-      ${block.heading ? `<h2 style="font-size:34px;line-height:1.2;margin:0 0 10px;font-weight:700;color:${theme.text};">${escapeHtml(block.heading)}</h2>` : ""}
-      ${block.subheading ? `<p style="margin:0 0 22px;font-size:16px;line-height:1.8;color:${theme.muted};">${escapeHtml(block.subheading)}</p>` : ""}
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;">
-        ${(block.items || [])
-          .map(
-            (item) => `
-            <div style="padding:18px;border-radius:${theme.radius};background:${theme.bg};border:1px solid #e2e8f0;">
-              <div style="width:42px;height:42px;border-radius:999px;background:${theme.accentSoft};display:flex;align-items:center;justify-content:center;color:${theme.accent};font-weight:700;margin-bottom:12px;">✓</div>
-              <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:${theme.text};">${escapeHtml(item.title)}</h3>
-              <p style="margin:0;font-size:15px;line-height:1.7;color:${theme.muted};">${escapeHtml(item.text)}</p>
-            </div>`
-          )
-          .join("")}
-      </div>
-    `);
-  }
-
   if (block.type === "textImage") {
     const imageStyle =
       block.imageRatio === "portrait"
@@ -527,58 +492,28 @@ function BlockSettings({ block, setBlocks, theme }) {
           <Input value={block.anchor || ""} onChange={(e) => patchBlock({ anchor: e.target.value })} />
         </Field>
 
-        <div className="builder-grid-2">
-          <Field label="Padding">
-            <Select value={block.settings?.padding || "medium"} onValueChange={(value) => patchSettings({ padding: value })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="small">Malý</SelectItem>
-                <SelectItem value="medium">Střední</SelectItem>
-                <SelectItem value="large">Velký</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
+        <Field label="Padding">
+          <select
+            value={block.settings?.padding || "medium"}
+            onChange={(e) => patchSettings({ padding: e.target.value })}
+          >
+            <option value="small">Malý</option>
+            <option value="medium">Střední</option>
+            <option value="large">Velký</option>
+          </select>
+        </Field>
 
-          <Field label="Pozadí">
-            <Select value={block.settings?.background || "white"} onValueChange={(value) => patchSettings({ background: value })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="white">Bílé</SelectItem>
-                <SelectItem value="muted">Jemně šedé</SelectItem>
-                <SelectItem value="accentSoft">Brand pozadí</SelectItem>
-                <SelectItem value="transparent">Transparentní</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
-
-        <div className="builder-grid-2">
-          <Field label="Šířka kontejneru">
-            <Select value={block.settings?.container || "default"} onValueChange={(value) => patchSettings({ container: value })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="narrow">Úzká</SelectItem>
-                <SelectItem value="default">Standard</SelectItem>
-                <SelectItem value="full">Plná šířka</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field label="Vlastní CSS třída">
-            <Input value={block.settings?.customClass || ""} onChange={(e) => patchSettings({ customClass: e.target.value })} />
-          </Field>
-        </div>
-
-        <div className="builder-toggle-grid">
-          <div className="builder-toggle-row"><span>Zaoblené rohy</span><Switch checked={!!block.settings?.rounded} onCheckedChange={(val) => patchSettings({ rounded: val })} /></div>
-          <div className="builder-toggle-row"><span>Rámeček</span><Switch checked={!!block.settings?.border} onCheckedChange={(val) => patchSettings({ border: val })} /></div>
-          <div className="builder-toggle-row"><span>Stín</span><Switch checked={!!block.settings?.shadow} onCheckedChange={(val) => patchSettings({ shadow: val })} /></div>
-          <div className="builder-toggle-row"><span>Skrýt na mobilu</span><Switch checked={!!block.settings?.hiddenOnMobile} onCheckedChange={(val) => patchSettings({ hiddenOnMobile: val })} /></div>
-        </div>
-      </div>
-
-      <div className="builder-panel">
-        <div className="builder-panel-title">Obsah</div>
+        <Field label="Pozadí">
+          <select
+            value={block.settings?.background || "white"}
+            onChange={(e) => patchSettings({ background: e.target.value })}
+          >
+            <option value="white">Bílé</option>
+            <option value="muted">Jemně šedé</option>
+            <option value="accentSoft">Brand pozadí</option>
+            <option value="transparent">Transparentní</option>
+          </select>
+        </Field>
 
         {(block.type === "benefitIcons3" || block.type === "benefitIcons4") && (
           <>
@@ -638,250 +573,6 @@ function BlockSettings({ block, setBlocks, theme }) {
             <Field label="ALT obrázku">
               <Input value={block.imageAlt || ""} onChange={(e) => patchBlock({ imageAlt: e.target.value })} />
             </Field>
-
-            <div className="builder-grid-2">
-              <Field label="Pozice obrázku">
-                <Select value={block.imagePosition || "right"} onValueChange={(value) => patchBlock({ imagePosition: value })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="left">Vlevo</SelectItem>
-                    <SelectItem value="right">Vpravo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-
-              <Field label="Poměr obrázku">
-                <Select value={block.imageRatio || "square"} onValueChange={(value) => patchBlock({ imageRatio: value })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="square">Čtverec</SelectItem>
-                    <SelectItem value="portrait">Na výšku</SelectItem>
-                    <SelectItem value="landscape">Na šířku</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            <div className="builder-grid-2">
-              <Field label="Text tlačítka">
-                <Input value={block.buttonText || ""} onChange={(e) => patchBlock({ buttonText: e.target.value })} />
-              </Field>
-              <Field label="Odkaz tlačítka">
-                <Input value={block.buttonLink || ""} onChange={(e) => patchBlock({ buttonLink: e.target.value })} />
-              </Field>
-            </div>
-          </>
-        )}
-
-        {block.type === "text" && (
-          <>
-            <Field label="Nadpis">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-            <Field label="Text">
-              <Textarea value={block.text || ""} onChange={(e) => patchBlock({ text: e.target.value })} />
-            </Field>
-          </>
-        )}
-
-        {block.type === "image" && (
-          <>
-            <Field label="URL obrázku">
-              <Input value={block.imageUrl || ""} onChange={(e) => patchBlock({ imageUrl: e.target.value })} />
-            </Field>
-            <Field label="ALT obrázku">
-              <Input value={block.imageAlt || ""} onChange={(e) => patchBlock({ imageAlt: e.target.value })} />
-            </Field>
-            <Field label="Popisek">
-              <Input value={block.caption || ""} onChange={(e) => patchBlock({ caption: e.target.value })} />
-            </Field>
-          </>
-        )}
-
-        {block.type === "gallery" && (
-          <>
-            <Field label="Nadpis galerie">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-
-            {(block.images || []).map((img, index) => (
-              <div key={index} className="builder-subpanel">
-                <Field label="URL">
-                  <Input
-                    value={img.url}
-                    onChange={(e) => {
-                      const next = [...block.images];
-                      next[index] = { ...next[index], url: e.target.value };
-                      patchBlock({ images: next });
-                    }}
-                  />
-                </Field>
-                <Field label="ALT">
-                  <Input
-                    value={img.alt}
-                    onChange={(e) => {
-                      const next = [...block.images];
-                      next[index] = { ...next[index], alt: e.target.value };
-                      patchBlock({ images: next });
-                    }}
-                  />
-                </Field>
-              </div>
-            ))}
-
-            <Button variant="outline" onClick={() => patchBlock({ images: [...(block.images || []), { url: "", alt: "" }] })}>
-              + Přidat obrázek
-            </Button>
-          </>
-        )}
-
-        {block.type === "faq" && (
-          <>
-            <Field label="Nadpis">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-
-            <div className="builder-toggle-row">
-              <span>Rozbalovací FAQ</span>
-              <Switch checked={!!block.accordion} onCheckedChange={(val) => patchBlock({ accordion: val })} />
-            </div>
-
-            {(block.items || []).map((item, index) => (
-              <div key={index} className="builder-subpanel">
-                <Field label="Otázka">
-                  <Input
-                    value={item.q}
-                    onChange={(e) => {
-                      const next = [...block.items];
-                      next[index] = { ...next[index], q: e.target.value };
-                      patchBlock({ items: next });
-                    }}
-                  />
-                </Field>
-                <Field label="Odpověď">
-                  <Textarea
-                    value={item.a}
-                    onChange={(e) => {
-                      const next = [...block.items];
-                      next[index] = { ...next[index], a: e.target.value };
-                      patchBlock({ items: next });
-                    }}
-                  />
-                </Field>
-              </div>
-            ))}
-
-            <Button variant="outline" onClick={() => patchBlock({ items: [...(block.items || []), { q: "", a: "" }] })}>
-              + Přidat otázku
-            </Button>
-          </>
-        )}
-
-        {block.type === "columns" && (
-          <>
-            <Field label="Nadpis">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-
-            {(block.columns || []).map((col, index) => (
-              <div key={index} className="builder-subpanel">
-                <Field label="Nadpis sloupce">
-                  <Input
-                    value={col.heading}
-                    onChange={(e) => {
-                      const next = [...block.columns];
-                      next[index] = { ...next[index], heading: e.target.value };
-                      patchBlock({ columns: next });
-                    }}
-                  />
-                </Field>
-                <Field label="Text">
-                  <Textarea
-                    value={col.text}
-                    onChange={(e) => {
-                      const next = [...block.columns];
-                      next[index] = { ...next[index], text: e.target.value };
-                      patchBlock({ columns: next });
-                    }}
-                  />
-                </Field>
-              </div>
-            ))}
-
-            <Button variant="outline" onClick={() => patchBlock({ columns: [...(block.columns || []), { heading: "", text: "" }] })}>
-              + Přidat sloupec
-            </Button>
-          </>
-        )}
-
-        {block.type === "video" && (
-          <>
-            <Field label="Nadpis">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-            <Field label="YouTube URL">
-              <Input value={block.youtubeUrl || ""} onChange={(e) => patchBlock({ youtubeUrl: e.target.value })} />
-            </Field>
-            <Field label="Popis">
-              <Textarea value={block.description || ""} onChange={(e) => patchBlock({ description: e.target.value })} />
-            </Field>
-          </>
-        )}
-
-        {block.type === "table" && (
-          <>
-            <Field label="Nadpis">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-
-            {(block.rows || []).map((row, index) => (
-              <div key={index} className="builder-grid-2">
-                <Input
-                  value={row[0]}
-                  onChange={(e) => {
-                    const next = [...block.rows];
-                    next[index] = [e.target.value, next[index][1]];
-                    patchBlock({ rows: next });
-                  }}
-                  placeholder="Název parametru"
-                />
-                <Input
-                  value={row[1]}
-                  onChange={(e) => {
-                    const next = [...block.rows];
-                    next[index] = [next[index][0], e.target.value];
-                    patchBlock({ rows: next });
-                  }}
-                  placeholder="Hodnota"
-                />
-              </div>
-            ))}
-
-            <Button variant="outline" onClick={() => patchBlock({ rows: [...(block.rows || []), ["", ""]] })}>
-              + Přidat řádek
-            </Button>
-          </>
-        )}
-
-        {block.type === "ctaBanner" && (
-          <>
-            <Field label="Malý titulek">
-              <Input value={block.eyebrow || ""} onChange={(e) => patchBlock({ eyebrow: e.target.value })} />
-            </Field>
-            <Field label="Hlavní nadpis">
-              <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-            </Field>
-            <Field label="Text">
-              <Textarea value={block.text || ""} onChange={(e) => patchBlock({ text: e.target.value })} />
-            </Field>
-            <div className="builder-grid-2">
-              <Field label="Text tlačítka">
-                <Input value={block.buttonText || ""} onChange={(e) => patchBlock({ buttonText: e.target.value })} />
-              </Field>
-              <Field label="Odkaz tlačítka">
-                <Input value={block.buttonLink || ""} onChange={(e) => patchBlock({ buttonLink: e.target.value })} />
-              </Field>
-            </div>
           </>
         )}
       </div>
@@ -903,6 +594,7 @@ export default function EshopTextBuilderPro() {
   const [blocks, setBlocks] = useState(createTemplate("product"));
   const [selectedId, setSelectedId] = useState(null);
   const [draggedId, setDraggedId] = useState(null);
+  const [activeTab, setActiveTab] = useState("preview");
 
   useEffect(() => {
     if (!selectedId && blocks[0]?.id) setSelectedId(blocks[0].id);
@@ -1040,10 +732,10 @@ export default function EshopTextBuilderPro() {
           </div>
 
           <div className="builder-top-actions">
-            <Button variant="secondary" onClick={saveProject}>💾 Uložit</Button>
-            <Button variant="secondary" onClick={loadProject}>◫ Načíst</Button>
-            <Button variant="secondary" onClick={exportJson}>⬇ JSON</Button>
-            <Button onClick={() => copyToClipboard()}>⧉ Kopírovat HTML</Button>
+            <Button variant="secondary" onClick={saveProject}>Uložit</Button>
+            <Button variant="secondary" onClick={loadProject}>Načíst</Button>
+            <Button variant="secondary" onClick={exportJson}>JSON</Button>
+            <Button onClick={() => copyToClipboard()}>Kopírovat HTML</Button>
           </div>
         </div>
 
@@ -1056,28 +748,20 @@ export default function EshopTextBuilderPro() {
                 <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} />
               </Field>
 
-              <div className="builder-grid-2">
-                <Field label="Typ stránky">
-                  <Select value={pageType} onValueChange={(value) => setPageType(value)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="product">Produkt</SelectItem>
-                      <SelectItem value="category">Kategorie</SelectItem>
-                      <SelectItem value="homepage">Homepage</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
+              <Field label="Typ stránky">
+                <select value={pageType} onChange={(e) => setPageType(e.target.value)}>
+                  <option value="product">Produkt</option>
+                  <option value="category">Kategorie</option>
+                  <option value="homepage">Homepage</option>
+                </select>
+              </Field>
 
-                <Field label="Brand styl">
-                  <Select value={theme.brand} onValueChange={(value) => setTheme(createDefaultTheme(value))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mimousek">Mimoušek</SelectItem>
-                      <SelectItem value="chrapatko">Chrápátko</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </div>
+              <Field label="Brand styl">
+                <select value={theme.brand} onChange={(e) => setTheme(createDefaultTheme(e.target.value))}>
+                  <option value="mimousek">Mimoušek</option>
+                  <option value="chrapatko">Chrápátko</option>
+                </select>
+              </Field>
 
               <div className="builder-grid-2">
                 <Field label="Accent barva">
@@ -1099,40 +783,26 @@ export default function EshopTextBuilderPro() {
 
               <div className="builder-toggle-row">
                 <span>Přibalit exportní CSS</span>
-                <Switch checked={includeCss} onCheckedChange={setIncludeCss} />
+                <input type="checkbox" checked={includeCss} onChange={(e) => setIncludeCss(e.target.checked)} />
               </div>
 
               <div className="builder-grid-2">
-                <Button variant="outline" onClick={() => applyTemplate(pageType)}>✧ Šablona</Button>
-                <Button variant="outline" onClick={resetProject}>↺ Reset</Button>
+                <Button variant="outline" onClick={() => applyTemplate(pageType)}>Šablona</Button>
+                <Button variant="outline" onClick={resetProject}>Reset</Button>
               </div>
             </div>
 
             <div className="builder-panel">
               <div className="builder-panel-title">Přidat blok</div>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="builder-full-btn">+ Nový blok</Button>
-                </DialogTrigger>
-
-                <DialogContent className="builder-dialog">
-                  <DialogHeader>
-                    <DialogTitle>Obsahové bloky</DialogTitle>
-                  </DialogHeader>
-
-                  <div className="builder-catalog-grid">
-                    {blockCatalog.map((item) => (
-                      <CatalogButton key={item.type} item={item} onAdd={addBlock} />
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <div className="builder-catalog-grid">
+                {blockCatalog.map((item) => (
+                  <CatalogButton key={item.type} item={item} onAdd={addBlock} />
+                ))}
+              </div>
             </div>
 
             <div className="builder-panel">
               <div className="builder-panel-title">Bloky</div>
-
               <div className="builder-block-list">
                 {blocks.map((block, index) => (
                   <button
@@ -1145,12 +815,8 @@ export default function EshopTextBuilderPro() {
                     onClick={() => setSelectedId(block.id)}
                     className={`builder-block-item ${selectedId === block.id ? "is-active" : ""} ${draggedId === block.id ? "is-dragging" : ""}`}
                   >
-                    <div className="builder-block-item-head">
-                      <div>
-                        <div className="builder-block-item-title">{block.title || block.type}</div>
-                        <div className="builder-block-item-meta">#{index + 1} · {block.type}</div>
-                      </div>
-                    </div>
+                    <div className="builder-block-item-title">{block.title || block.type}</div>
+                    <div className="builder-block-item-meta">#{index + 1} · {block.type}</div>
 
                     <div className="builder-block-actions">
                       <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }}>↑</Button>
@@ -1207,29 +873,33 @@ export default function EshopTextBuilderPro() {
             <div className="builder-panel">
               <div className="builder-panel-title">Export</div>
 
-              <Tabs defaultValue="preview">
-                <TabsList className="builder-tabs-list">
-                  <TabsTrigger value="preview">◉ Náhled</TabsTrigger>
-                  <TabsTrigger value="html"></> HTML</TabsTrigger>
-                  <TabsTrigger value="shoptet">✧ Shoptet</TabsTrigger>
-                </TabsList>
+              <div className="builder-tabs-list">
+                <button className={activeTab === "preview" ? "builder-tab active" : "builder-tab"} onClick={() => setActiveTab("preview")}>Náhled</button>
+                <button className={activeTab === "html" ? "builder-tab active" : "builder-tab"} onClick={() => setActiveTab("html")}>HTML</button>
+                <button className={activeTab === "shoptet" ? "builder-tab active" : "builder-tab"} onClick={() => setActiveTab("shoptet")}>Shoptet</button>
+              </div>
 
-                <TabsContent value="preview" className="builder-tab-content">
+              {activeTab === "preview" && (
+                <div className="builder-tab-content">
                   <div className="builder-export-preview" dangerouslySetInnerHTML={{ __html: generatedHtml }} />
-                </TabsContent>
+                </div>
+              )}
 
-                <TabsContent value="html" className="builder-tab-content">
+              {activeTab === "html" && (
+                <div className="builder-tab-content">
                   <Textarea className="builder-code" readOnly value={generatedHtml} />
-                  <Button className="builder-full-btn" onClick={() => copyToClipboard(generatedHtml)}>⧉ Kopírovat kompletní HTML</Button>
-                </TabsContent>
+                  <Button className="builder-full-btn" onClick={() => copyToClipboard(generatedHtml)}>Kopírovat kompletní HTML</Button>
+                </div>
+              )}
 
-                <TabsContent value="shoptet" className="builder-tab-content">
+              {activeTab === "shoptet" && (
+                <div className="builder-tab-content">
                   <div className="builder-note">
                     Tento export je připravený pro vložení do Shoptet editoru nebo do vlastního HTML bloku.
                   </div>
                   <Textarea className="builder-code" readOnly value={generatedHtml} />
-                </TabsContent>
-              </Tabs>
+                </div>
+              )}
             </div>
           </div>
 
