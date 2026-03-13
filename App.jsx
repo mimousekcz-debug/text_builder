@@ -1,27 +1,44 @@
-import {
-  Copy,
-  Wand2,
-  Trash2,
-  Plus,
-  Eye,
-  Code2,
-  Type,
-  Image as ImageIcon,
-  HelpCircle,
-  Columns2,
-  Video,
-  Table,
-  GripVertical,
-  Settings2,
-  GalleryHorizontal,
-  BadgeCheck,
-  Megaphone,
-  LayoutTemplate,
-  Download,
-  Save,
-  RotateCcw,
-  Sparkles,
-} from "lucide-react";
+const makeIcon = (symbol) => {
+  return function Icon({ className = "" }) {
+    return (
+      <span
+        className={className}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontStyle: "normal",
+          lineHeight: 1,
+        }}
+      >
+        {symbol}
+      </span>
+    );
+  };
+};
+
+const Copy = makeIcon("⧉");
+const Wand2 = makeIcon("✦");
+const Trash2 = makeIcon("🗑");
+const Plus = makeIcon("+");
+const Eye = makeIcon("◉");
+const Code2 = makeIcon("</>");
+const Type = makeIcon("T");
+const ImageIcon = makeIcon("🖼");
+const HelpCircle = makeIcon("?");
+const Columns2 = makeIcon("▥");
+const Video = makeIcon("▶");
+const Table = makeIcon("▤");
+const GripVertical = makeIcon("⋮⋮");
+const Settings2 = makeIcon("⚙");
+const GalleryHorizontal = makeIcon("▭");
+const BadgeCheck = makeIcon("✓");
+const Megaphone = makeIcon("📣");
+const LayoutTemplate = makeIcon("◫");
+const Download = makeIcon("⬇");
+const Save = makeIcon("💾");
+const RotateCcw = makeIcon("↺");
+const Sparkles = makeIcon("✧");
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
