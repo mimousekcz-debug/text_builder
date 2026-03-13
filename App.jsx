@@ -1,219 +1,297 @@
 import React, { useEffect, useState } from "react";
 
+// --- IKONY ---
 const Icons = {
-  Move: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg>,
-  Trash: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+  Move: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 9l7-7 7 7M5 15l7 7 7-7"/></svg>,
+  Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+  Plus: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+  User: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 };
 
-export default function ShoptetBuilderFinal() {
-  const [blocks, setBlocks] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [projectName, setProjectName] = useState("produkt - CZ");
-  const [library, setLibrary] = useState([]);
+export default function ShoptetBuilder() {
+  // Stav pro přihlášení
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState({ email: "", password: "" });
 
-  // Načtení knihovny
+  // Hlavní data aplikce
+  const [projects, setProjects] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState(null);
+  const [selectedBlockId, setSelectedBlockId] = useState(null);
+
+  // Načtení z LocalStorage při startu
   useEffect(() => {
-    const saved = localStorage.getItem("shoptet_builder_data");
-    if (saved) setLibrary(JSON.parse(saved));
+    const saved = localStorage.getItem("shoptet_projects");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setProjects(parsed);
+      if (parsed.length > 0) setActiveProjectId(parsed[0].id);
+    }
   }, []);
 
-  const saveToLibrary = () => {
-    const newEntry = { id: Date.now(), name: projectName, data: blocks };
-    const updated = [...library.filter(i => i.name !== projectName), newEntry];
-    setLibrary(updated);
-    localStorage.setItem("shoptet_builder_data", JSON.stringify(updated));
-    alert("Uloženo do knihovny.");
+  // Ukládání do LocalStorage při změně
+  useEffect(() => {
+    localStorage.setItem("shoptet_projects", JSON.stringify(projects));
+  }, [projects]);
+
+  const activeProject = projects.find(p => p.id === activeProjectId);
+
+  // --- FUNKCE PROJEKTŮ ---
+  const createNewProject = () => {
+    const name = prompt("Název nového projektu:");
+    if (!name) return;
+    const newProj = { id: crypto.randomUUID(), name, blocks: [] };
+    setProjects([...projects, newProj]);
+    setActiveProjectId(newProj.id);
   };
 
-  const addBlock = (type, meta = {}) => {
-    const id = crypto.randomUUID();
-    let newBlock = { 
-      id, 
-      type, 
-      heading: "Nadpis", 
-      text: "Textový obsah...", 
-      url: "https://placehold.co/600x400",
-      items: [] 
+  const deleteProject = (id, e) => {
+    e.stopPropagation();
+    if (window.confirm("Opravdu smazat celý projekt?")) {
+      const filtered = projects.filter(p => p.id !== id);
+      setProjects(filtered);
+      if (activeProjectId === id) setActiveProjectId(filtered[0]?.id || null);
+    }
+  };
+
+  // --- FUNKCE BLOKŮ ---
+  const addBlock = (type) => {
+    if (!activeProjectId) return alert("Nejdříve vytvořte nebo vyberte projekt.");
+    const newBlock = {
+      id: crypto.randomUUID(),
+      type,
+      heading: type === 'faq' ? "Máte dotazy?" : "Nový nadpis",
+      text: type === 'faq' ? "Rádi odpovíme." : "Zde napište váš text...",
+      url: type === 'youtube' ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : "https://placehold.co/600x400?text=Obrazok",
     };
     
-    if (type === 'benefits') {
-      newBlock.items = Array(meta.count || 3).fill(0).map((_, i) => ({
-        t: `Výhoda ${i+1}`,
-        img: "https://www.chrapatko.cz/user/documents/upload/icon-placeholder.png"
-      }));
-    }
-    
-    setBlocks([...blocks, newBlock]);
-    setSelectedId(id);
+    setProjects(prev => prev.map(p => 
+      p.id === activeProjectId ? { ...p, blocks: [...p.blocks, newBlock] } : p
+    ));
+    setSelectedBlockId(newBlock.id);
   };
 
-  const updateBlock = (id, patch) => {
-    setBlocks(prev => prev.map(b => b.id === id ? { ...b, ...patch } : b));
-  };
-
-  const updateBenefitItem = (blockId, index, field, value) => {
-    setBlocks(prev => prev.map(b => {
-      if (b.id === blockId) {
-        const newItems = [...b.items];
-        newItems[index] = { ...newItems[index], [field]: value };
-        return { ...b, items: newItems };
+  const updateBlock = (patch) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id === activeProjectId) {
+        return {
+          ...p,
+          blocks: p.blocks.map(b => b.id === selectedBlockId ? { ...b, ...patch } : b)
+        };
       }
-      return b;
+      return p;
     }));
   };
 
-  const getYouTubeId = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+  const removeBlock = (id, e) => {
+    e.stopPropagation();
+    setProjects(prev => prev.map(p => 
+      p.id === activeProjectId ? { ...p, blocks: p.blocks.filter(b => b.id !== id) } : p
+    ));
+    if (selectedBlockId === id) setSelectedBlockId(null);
   };
 
   const copyHTML = () => {
-    let finalHTML = `<div class="shoptet-custom-content" style="font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto;">\n`;
-    
-    blocks.forEach(b => {
-      if (b.type === 'heading') finalHTML += `  <h2 style="text-align:center; margin: 40px 0;">${b.heading}</h2>\n`;
-      if (b.type === 'text') finalHTML += `  <p style="line-height:1.6; margin-bottom:20px;">${b.text}</p>\n`;
-      if (b.type === 'image') finalHTML += `  <img src="${b.url}" style="width:100%; height:auto; border-radius:10px; margin-bottom:30px;" alt="${b.heading}">\n`;
-      if (b.type === 'youtube') {
-        const ytId = getYouTubeId(b.url);
-        finalHTML += `  <div style="position:relative; padding-bottom:56.25%; height:0; margin-bottom:30px;"><iframe src="https://www.youtube.com/embed/${ytId}" style="position:absolute; width:100%; height:100%;" frameborder="0" allowfullscreen></iframe></div>\n`;
-      }
-      if (b.type === 'benefits') {
-        finalHTML += `  <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:20px; margin: 40px 0;">\n`;
-        b.items.forEach(it => {
-          finalHTML += `    <div style="flex:1; min-width:150px; text-align:center;"><img src="${it.img}" style="width:80px; height:80px; margin-bottom:10px;"><p><strong>${it.t}</strong></p></div>\n`;
-        });
-        finalHTML += `  </div>\n`;
-      }
+    if (!activeProject) return;
+    let html = `<div class="st-container" style="max-width:800px; margin:0 auto; font-family:sans-serif;">\n`;
+    activeProject.blocks.forEach(b => {
+      if (b.type === 'text') html += `<div style="padding:20px; text-align:center;"><h2>${b.heading}</h2><p>${b.text}</p></div>\n`;
+      if (b.type === 'image') html += `<img src="${b.url}" style="width:100%; border-radius:8px; margin:20px 0;" />\n`;
+      if (b.type === 'youtube') html += `<iframe width="100%" height="400" src="https://www.youtube.com/embed/${b.url.split('v=')[1]}" frameborder="0" allowfullscreen></iframe>\n`;
     });
-
-    finalHTML += `</div>`;
-    navigator.clipboard.writeText(finalHTML);
-    alert("HTML kód byl zkopírován!");
+    html += `</div>`;
+    navigator.clipboard.writeText(html);
+    alert("HTML exportováno do schránky!");
   };
 
-  const activeBlock = blocks.find(b => b.id === selectedId);
+  // --- LOGIN SCREEN ---
+  if (!isLoggedIn) {
+    return (
+      <div className="login-overlay">
+        <div className="login-card">
+          <h2>Přihlášení klienta</h2>
+          <p>Vítejte v Shoptet Content Builderu</p>
+          <input type="text" placeholder="E-mail" onChange={e => setUser({...user, email: e.target.value})} />
+          <input type="password" placeholder="Heslo" onChange={e => setUser({...user, password: e.target.value})} />
+          <button className="login-btn" onClick={() => setIsLoggedIn(true)}>Přihlásit se</button>
+        </div>
+      </div>
+    );
+  }
 
+  // --- HLAVNÍ EDITOR ---
   return (
-    <div className="builder-wrapper">
-      <header className="top-bar">
-        <div className="logo">E-shop Content Builder</div>
-        <button className="export-btn" onClick={copyHTML}>Kopírovat HTML</button>
+    <div className="app-container">
+      {/* Horní lišta */}
+      <header className="admin-header">
+        <div className="header-left">
+          <div className="status-dot" />
+          <span className="test-alert">Testovací verze doplňku – Plná verze bez omezení je k zaplacení v sekci "Můj balíček"</span>
+        </div>
+        <div className="header-right">
+          <button className="primary-btn" onClick={copyHTML}>Kontaktujte nás</button>
+        </div>
       </header>
 
-      <div className="main-layout">
-        {/* LEVÝ PANEL */}
-        <aside className="side-panel left">
-          <div className="card">
-            <label>Název projektu</label>
-            <input value={projectName} onChange={e => setProjectName(e.target.value)} />
-            <button className="primary-btn" onClick={saveToLibrary}>Uložit vzor</button>
+      <div className="editor-layout">
+        {/* LEVÝ PANEL - PROJEKTY */}
+        <aside className="projects-sidebar">
+          <div className="sidebar-header">
+            <h3>Projekty</h3>
+            <button className="icon-add-btn" onClick={createNewProject}><Icons.Plus /></button>
           </div>
-
-          <div className="card">
-            <h3>Přidat blok</h3>
-            <div className="widget-grid">
-              <button onClick={() => addBlock('benefits', {count: 3})}>Výhody 3 ikony</button>
-              <button onClick={() => addBlock('benefits', {count: 4})}>Výhody 4 ikony</button>
-              <button onClick={() => addBlock('text-image-left')}>Text a obrázek</button>
-              <button onClick={() => addBlock('text')}>Text</button>
-              <button onClick={() => addBlock('image')}>Obrázek</button>
-              <button onClick={() => addBlock('youtube')}>Video</button>
-              <button onClick={() => addBlock('faq')}>Otázky a odpovědi</button>
-              <button onClick={() => addBlock('cta')}>CTA banner</button>
-            </div>
+          <div className="project-list">
+            {projects.map(p => (
+              <div 
+                key={p.id} 
+                className={`project-item ${activeProjectId === p.id ? 'active' : ''}`}
+                onClick={() => setActiveProjectId(p.id)}
+              >
+                <span>{p.name}</span>
+                <button className="btn-del" onClick={(e) => deleteProject(p.id, e)}><Icons.Trash /></button>
+              </div>
+            ))}
           </div>
         </aside>
 
-        {/* STŘEDNÍ PLOCHA */}
-        <main className="canvas">
-          {blocks.length === 0 && <div className="empty-info">Klikněte na tlačítko vlevo pro přidání bloku</div>}
-          {blocks.map((b) => (
-            <div 
-              key={b.id} 
-              className={`block-item ${selectedId === b.id ? 'selected' : ''}`}
-              onClick={() => setSelectedId(b.id)}
-            >
-              <div className="block-label">{b.type.toUpperCase()}</div>
-              <button className="delete-icon" onClick={(e) => { e.stopPropagation(); setBlocks(blocks.filter(x => x.id !== b.id)); }}>
-                <Icons.Trash />
-              </button>
-              <div className="preview-content">
-                {b.type === 'benefits' ? (
-                  <div className="benefits-preview">
-                    {b.items.map((it, i) => <div key={i}><img src={it.img} alt="" /><span>{it.t}</span></div>)}
+        {/* PROSTŘEDEK - PLOCHA */}
+        <main className="canvas-area">
+          <div className="toolbar-top">
+            <button onClick={() => addBlock('text')}>Text</button>
+            <button onClick={() => addBlock('image')}>Obrázek</button>
+            <button onClick={() => addBlock('youtube')}>Video</button>
+            <button onClick={() => addBlock('faq')}>Otázky a Odpovědi</button>
+          </div>
+
+          <div className="preview-window">
+            <h1 className="preview-title">{activeProject?.name || "Vyberte projekt"}</h1>
+            
+            <div className="blocks-container">
+              {activeProject?.blocks.map(b => (
+                <div 
+                  key={b.id} 
+                  className={`canvas-block ${selectedBlockId === b.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedBlockId(b.id)}
+                >
+                  <div className="block-actions">
+                    <button onClick={(e) => removeBlock(b.id, e)}><Icons.Trash /></button>
                   </div>
-                ) : (
-                  <div>{b.heading}</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </main>
 
-        {/* PRAVÝ PANEL */}
-        <aside className="side-panel right">
-          {activeBlock ? (
-            <div className="settings">
-              <h3>Nastavení: {activeBlock.type}</h3>
-              <label>Nadpis</label>
-              <input value={activeBlock.heading} onChange={e => updateBlock(selectedId, {heading: e.target.value})} />
-              
-              <label>Text</label>
-              <textarea value={activeBlock.text} onChange={e => updateBlock(selectedId, {text: e.target.value})} />
+                  {b.type === 'image' && (
+                    <div className="img-placeholder">
+                      <img src={b.url} alt="preview" />
+                    </div>
+                  )}
 
-              {(activeBlock.type === 'image' || activeBlock.type === 'youtube') && (
-                <>
-                  <label>{activeBlock.type === 'youtube' ? 'YouTube URL' : 'URL Obrázku'}</label>
-                  <input value={activeBlock.url} onChange={e => updateBlock(selectedId, {url: e.target.value})} />
-                </>
-              )}
+                  {b.type === 'text' || b.type === 'faq' ? (
+                    <div className="text-preview">
+                      <h4>{b.heading}</h4>
+                      <p>{b.text}</p>
+                    </div>
+                  ) : null}
 
-              {activeBlock.type === 'benefits' && activeBlock.items.map((it, i) => (
-                <div key={i} className="benefit-editor">
-                  <hr />
-                  <label>Ikona {i+1} (URL)</label>
-                  <input value={it.img} onChange={e => updateBenefitItem(selectedId, i, 'img', e.target.value)} />
-                  <label>Text {i+1}</label>
-                  <input value={it.t} onChange={e => updateBenefitItem(selectedId, i, 't', e.target.value)} />
+                  {b.type === 'youtube' && (
+                     <div className="video-placeholder">
+                        <img src={`https://img.youtube.com/vi/${b.url.split('v=')[1]}/0.jpg`} alt="yt" />
+                        <div className="play-button" />
+                     </div>
+                  )}
                 </div>
               ))}
             </div>
-          ) : <div className="empty-info">Vyberte blok pro úpravu</div>}
+          </div>
+        </main>
+
+        {/* PRAVÝ PANEL - NASTAVENÍ */}
+        <aside className="settings-sidebar">
+          {selectedBlockId && activeProject ? (
+            <div className="settings-content">
+              <h3>Nastavení bloku</h3>
+              <div className="input-group">
+                <label>Nadpis</label>
+                <input 
+                  value={activeProject.blocks.find(b => b.id === selectedBlockId)?.heading || ""} 
+                  onChange={e => updateBlock({ heading: e.target.value })}
+                />
+              </div>
+              <div className="input-group">
+                <label>Popis / Text</label>
+                <textarea 
+                   rows="5"
+                   value={activeProject.blocks.find(b => b.id === selectedBlockId)?.text || ""} 
+                   onChange={e => updateBlock({ text: e.target.value })}
+                />
+              </div>
+              {activeProject.blocks.find(b => b.id === selectedBlockId)?.url !== undefined && (
+                <div className="input-group">
+                  <label>URL média</label>
+                  <input 
+                    value={activeProject.blocks.find(b => b.id === selectedBlockId)?.url || ""} 
+                    onChange={e => updateBlock({ url: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="empty-state">Vyberte blok pro úpravu parametrů</div>
+          )}
         </aside>
       </div>
 
       <style>{`
-        .builder-wrapper { display: flex; flex-direction: column; height: 100vh; font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; }
-        .top-bar { background: #1a1b35; color: white; padding: 12px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .export-btn { background: #fff; color: #1a1b35; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        :root { --primary: #1a1b35; --accent: #ff4d4d; --bg: #fdfdfd; --border: #ececec; }
+        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #333; }
         
-        .main-layout { display: flex; flex: 1; overflow: hidden; }
-        .side-panel { width: 320px; background: #fff; padding: 20px; border: 1px solid #e0e0e0; overflow-y: auto; }
-        .card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #eee; }
-        
-        .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .widget-grid button { background: #f8f9fa; border: 1px solid #ddd; padding: 10px 5px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: 0.2s; }
-        .widget-grid button:hover { background: #e9ecef; border-color: #1a1b35; }
+        /* Login */
+        .login-overlay { position: fixed; inset: 0; background: #f0f2f5; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 350px; text-align: center; }
+        .login-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;}
+        .login-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px;}
 
-        .canvas { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .block-item { background: #fff; padding: 25px; border-radius: 12px; position: relative; border: 2px solid transparent; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .block-item.selected { border-color: #1a1b35; }
-        .block-label { position: absolute; top: 8px; left: 12px; font-size: 9px; font-weight: bold; color: #999; }
-        .delete-icon { position: absolute; top: 10px; right: 10px; border: none; background: #fee2e2; color: #ef4444; border-radius: 4px; padding: 4px; cursor: pointer; }
+        /* App Structure */
+        .app-container { display: flex; flex-direction: column; height: 100vh; }
+        .admin-header { height: 50px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .test-alert { color: #d32f2f; font-size: 12px; font-weight: 600; }
         
-        .benefits-preview { display: flex; gap: 20px; justify-content: center; }
-        .benefits-preview img { width: 40px; height: 40px; display: block; margin: 0 auto; }
-        .benefits-preview span { font-size: 10px; display: block; text-align: center; margin-top: 5px; }
+        .editor-layout { display: flex; flex: 1; overflow: hidden; }
 
-        .settings h3 { border-bottom: 2px solid #1a1b35; padding-bottom: 8px; margin-bottom: 20px; }
-        label { display: block; font-size: 11px; font-weight: bold; margin-top: 15px; color: #666; text-transform: uppercase; }
-        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        textarea { height: 100px; }
-        .primary-btn { width: 100%; background: #1a1b35; color: white; border: none; padding: 10px; border-radius: 6px; margin-top: 10px; cursor: pointer; }
+        /* Sidebar Projects */
+        .projects-sidebar { width: 220px; border-right: 1px solid var(--border); background: #fff; padding: 15px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .project-item { padding: 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 5px;}
+        .project-item.active { background: var(--primary); color: white; }
+        .project-item:hover:not(.active) { background: #f5f5f5; }
+        .btn-del { background: transparent; border: none; color: inherit; cursor: pointer; opacity: 0.6; }
+
+        /* Canvas Area */
+        .canvas-area { flex: 1; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 20px; }
+        .toolbar-top { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap: 10px; margin-bottom: 30px; }
+        .toolbar-top button { padding: 8px 16px; border: 1px solid var(--border); background: white; border-radius: 4px; cursor: pointer; font-size: 13px; }
         
-        .empty-info { text-align: center; color: #ccc; margin-top: 50px; }
+        .preview-window { width: 100%; max-width: 650px; background: white; min-height: 800px; box-shadow: 0 0 40px rgba(0,0,0,0.03); padding: 40px; }
+        .preview-title { text-align: center; font-size: 18px; margin-bottom: 40px; color: #888; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* Blocks */
+        .canvas-block { position: relative; margin-bottom: 20px; border: 1px dashed transparent; transition: 0.2s; border-radius: 8px; overflow: hidden; }
+        .canvas-block:hover { border-color: #4a90e2; }
+        .canvas-block.selected { border: 2px solid #4a90e2; box-shadow: 0 0 15px rgba(74,144,226,0.1); }
+        .block-actions { position: absolute; top: 10px; right: 10px; display: none; }
+        .canvas-block:hover .block-actions { display: block; }
+        .block-actions button { background: #ff4d4d; color: white; border: none; padding: 5px; border-radius: 4px; cursor: pointer; }
+
+        .img-placeholder img { width: 100%; height: auto; display: block; background: #eee; }
+        .text-preview { padding: 20px; text-align: center; }
+        .video-placeholder { position: relative; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; }
+        .video-placeholder img { width: 100%; opacity: 0.6; }
+        .play-button { position: absolute; width: 60px; height: 60px; background: rgba(255,0,0,0.8); border-radius: 50%; }
+
+        /* Settings Sidebar */
+        .settings-sidebar { width: 300px; border-left: 1px solid var(--border); background: #fff; padding: 20px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #666; }
+        .input-group input, .input-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        
+        .primary-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .empty-state { color: #ccc; text-align: center; margin-top: 100px; font-style: italic; }
       `}</style>
     </div>
   );
