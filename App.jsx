@@ -1,296 +1,206 @@
 import React, { useEffect, useMemo, useState } from "react";
-// import "./styles.css"; // Ujistěte se, že soubor existuje, nebo zakomentujte
 
-// --- POMOCNÉ KOMPONENTY (Tyto v kódu chyběly) ---
-const Button = ({ children, variant = "primary", size = "md", onClick, className = "", ...props }) => {
-  const baseStyle = "builder-btn"; // Styly řešte v CSS
-  return (
-    <button 
-      onClick={onClick} 
-      className={`${baseStyle} ${variant} ${size} ${className}`} 
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
+// --- POMOCNÉ KOMPONENTY PRO UI ---
+const Button = ({ children, variant = "primary", size = "md", onClick, className = "" }) => (
+  <button onClick={onClick} className={`btn btn-${variant} btn-${size} ${className}`}>{children}</button>
+);
 
 const Input = (props) => <input className="builder-input" {...props} />;
-const Textarea = (props) => <textarea className="builder-textarea" {...props} />;
+const Textarea = (props) => <textarea className="builder-textarea" rows={4} {...props} />;
 
-// --- POMOCNÉ FUNKCE (Ponecháno z vašeho kódu) ---
+// --- LOGIKA GENEROVÁNÍ HTML ---
 function escapeHtml(str) {
-  return (str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function slugify(str) {
-  return (str || "blok")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function youtubeEmbed(url) {
-  if (!url) return "";
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=)([^&]+)/,
-    /(?:youtu\.be\/)([^?&]+)/,
-    /(?:youtube\.com\/embed\/)([^?&]+)/,
-  ];
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match?.[1]) return `https://www.youtube.com/embed/${match[1]}`;
-  }
-  return url;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
 }
 
-function createDefaultTheme(brand = "mimousek") {
-  const themes = {
-    chrapatko: {
-      brand,
-      brandName: "Chrápátko",
-      accent: "#007599",
-      accentSoft: "#e6f6f8",
-      text: "#1e293b",
-      muted: "#64748b",
-      bg: "#ffffff",
-      cardBg: "#f8fafc",
-      radius: "22px",
-      buttonText: "#ffffff",
-    },
-    mimousek: {
-      brand,
-      brandName: "Mimoušek",
-      accent: "#9d7a5f",
-      accentSoft: "#f5f0f2",
-      text: "#6e513a",
-      muted: "#8b6a4d",
-      bg: "#ffffff",
-      cardBg: "#faf7f8",
-      radius: "22px",
-      buttonText: "#ffffff",
-    }
-  };
-  return themes[brand] || themes.mimousek;
-}
-
-const blockCatalog = [
-  { type: "benefitIcons3", label: "Výhody 3 ikony" },
-  { type: "benefitIcons4", label: "Výhody 4 ikony" },
-  { type: "textImage", label: "Text a obrázek" },
-  { type: "text", label: "Text" },
-  { type: "image", label: "Obrázek" },
-  { type: "gallery", label: "Galerie" },
-  { type: "faq", label: "Otázky a odpovědi" },
-  { type: "columns", label: "Sloupce" },
-  { type: "video", label: "Video" },
-  { type: "table", label: "Tabulka" },
-  { type: "ctaBanner", label: "CTA banner" },
-];
-
-function blockBase(type, title) {
-  return {
-    id: crypto.randomUUID(),
-    type,
-    title,
-    anchor: slugify(title),
-    settings: {
-      padding: "medium",
-      rounded: true,
-      background: "white",
-      container: "default",
-      border: false,
-      shadow: false,
-      hiddenOnMobile: false,
-      customClass: "",
-    },
-  };
-}
-
-function createBenefitItem(title = "prémiová\nkvalita") {
-  return {
-    imageUrl: "https://placehold.co/180x180?text=Ikona",
-    alt: "Ikona výhody",
-    title,
-  };
-}
-
-function createBlock(type) {
-  const base = blockBase(type, blockCatalog.find(b => b.type === type)?.label || type);
-  switch (type) {
-    case "benefitIcons3":
-      return { ...base, items: [createBenefitItem(), createBenefitItem(), createBenefitItem()] };
-    case "benefitIcons4":
-      return { ...base, items: [createBenefitItem(), createBenefitItem(), createBenefitItem(), createBenefitItem()] };
-    case "textImage":
-      return {
-        ...base,
-        heading: "Nadpis bloku",
-        text: "Sem napište text produktu...",
-        imageUrl: "https://placehold.co/900x900?text=Obrázek",
-        imageAlt: "Produktová fotografie",
-        imagePosition: "right",
-        imageRatio: "square",
-        buttonText: "Zjistit více",
-        buttonLink: "#",
-      };
-    case "text":
-      return { ...base, heading: "Textový blok", text: "Sem napište delší popis..." };
-    case "video":
-      return { ...base, heading: "Video", youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", description: "Popis videa" };
-    default:
-      return base;
-  }
-}
-
-function createTemplate(templateName) {
-  if (templateName === "product") return [createBlock("benefitIcons4"), createBlock("textImage"), createBlock("video")];
-  return [createBlock("text")];
-}
-
-function updateBlock(blocks, id, patch) {
-  return blocks.map((block) => (block.id === id ? { ...block, ...patch } : block));
-}
-
-// --- RENDERING LOGIKA (Ponecháno) ---
-function blockSectionStyles(settings, theme) {
-  const paddingMap = { small: "16px", medium: "28px", large: "40px" };
-  const backgroundMap = { white: theme.bg, muted: theme.cardBg, accentSoft: theme.accentSoft, transparent: "transparent" };
-  return [
-    `padding:${paddingMap[settings?.padding || "medium"]};`,
-    `border-radius:${settings?.rounded ? theme.radius : "0px"};`,
-    `background:${backgroundMap[settings?.background || "white"]};`,
-    settings?.border ? "border:1px solid #e2e8f0;" : "border:none;",
-    settings?.shadow ? "box-shadow:0 12px 30px rgba(15,23,42,.06);" : "box-shadow:none;",
-  ].join("");
-}
-
-function blockOuterStyles(settings) {
-  const containerMap = { default: "max-width:1200px;margin:0 auto;", narrow: "max-width:980px;margin:0 auto;", full: "max-width:100%;margin:0 auto;" };
-  return containerMap[settings?.container || "default"];
-}
-
-function renderBlockHtml(block, theme) {
-  const sectionStyle = blockSectionStyles(block.settings, theme);
-  const outerStyle = blockOuterStyles(block.settings);
-  const wrap = (inner) => `<section style="${outerStyle}"><div style="${sectionStyle}">${inner}</div></section>`;
-
-  if (block.type === "text") {
-    return wrap(`<h2>${escapeHtml(block.heading)}</h2><p>${escapeHtml(block.text)}</p>`);
-  }
-  // ... (další typy bloků by se doplnily dle původního vzoru)
-  return wrap(`<div>Blok typu: ${block.type}</div>`);
-}
-
-function buildExportHtml(blocks, theme, includeCss = true) {
-  return `<div class="eshop-export">${blocks.map((block) => renderBlockHtml(block, theme)).join("")}</div>`;
-}
-
-// --- KOMPONENTY ROZHRANÍ ---
-function CatalogButton({ item, onAdd }) {
-  return (
-    <button onClick={() => onAdd(item.type)} className="builder-catalog-btn">
-      {item.label}
-    </button>
-  );
-}
-
-function Field({ label, children }) {
-  return (
-    <div className="builder-field">
-      <label className="builder-label">{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function BlockSettings({ block, setBlocks, theme }) {
-  const patchBlock = (patch) => setBlocks((prev) => updateBlock(prev, block.id, patch));
-  if (!block) return <div className="builder-empty">Vyberte blok pro nastavení.</div>;
-
-  return (
-    <div className="builder-settings">
-      <div className="builder-panel">
-        <div className="builder-panel-title">Nastavení: {block.title}</div>
-        <Field label="Nadpis">
-          <Input value={block.heading || ""} onChange={(e) => patchBlock({ heading: e.target.value })} />
-        </Field>
-      </div>
-    </div>
-  );
-}
-
-// --- HLAVNÍ APLIKACE ---
+// --- HLAVNÍ KOMPONENTA EDITORU ---
 export default function EshopTextBuilderPro() {
-  const [projectName, setProjectName] = useState("produkt - CZ");
-  const [pageType, setPageType] = useState("product");
-  const [theme, setTheme] = useState(createDefaultTheme("mimousek"));
-  const [includeCss, setIncludeCss] = useState(true);
-  const [blocks, setBlocks] = useState(createTemplate("product"));
+  const [blocks, setBlocks] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [activeTab, setActiveTab] = useState("preview");
+  const [theme] = useState({ accent: "#9d7a5f", text: "#6e513a", radius: "12px", bg: "#ffffff" });
 
-  const selectedBlock = blocks.find((block) => block.id === selectedId) || null;
-  const generatedHtml = useMemo(() => buildExportHtml(blocks, theme, includeCss), [blocks, theme, includeCss]);
+  const selectedBlock = blocks.find((b) => b.id === selectedId);
 
+  // Přidání nového bloku
   const addBlock = (type) => {
-    const block = createBlock(type);
-    setBlocks([...blocks, block]);
-    setSelectedId(block.id);
+    const newBlock = {
+      id: crypto.randomUUID(),
+      type,
+      title: type.toUpperCase(),
+      heading: "Nový nadpis",
+      text: "Zde napište svůj text...",
+      url: "https://placehold.co/600x400",
+      items: type === "faq" ? [{ q: "Otázka?", a: "Odpověď." }] : []
+    };
+    setBlocks([...blocks, newBlock]);
+    setSelectedId(newBlock.id);
   };
 
+  // Aktualizace dat v bloku
+  const updateBlock = (id, patch) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, ...patch } : b));
+  };
+
+  // Smazání bloku
+  const deleteBlock = (id) => {
+    if (window.confirm("Smazat tento blok?")) {
+      setBlocks(blocks.filter(b => b.id !== id));
+      if (selectedId === id) setSelectedId(null);
+    }
+  };
+
+  // Posun bloku
+  const moveBlock = (index, direction) => {
+    const newBlocks = [...blocks];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= blocks.length) return;
+    [newBlocks[index], newBlocks[targetIndex]] = [newBlocks[targetIndex], newBlocks[index]];
+    setBlocks(newBlocks);
+  };
+
+  // --- RENDEROVÁNÍ NÁHLEDU (HTML) ---
+  const renderHtml = (block) => {
+    const s = `style="padding:20px; margin-bottom:20px; border-radius:${theme.radius}; background:${theme.bg}; color:${theme.text};"`;
+    
+    switch (block.type) {
+      case "text":
+        return `<div ${s}><h2>${escapeHtml(block.heading)}</h2><p>${escapeHtml(block.text).replace(/\n/g, "<br>")}</p></div>`;
+      case "image":
+        return `<div ${s}><img src="${block.url}" style="width:100%; border-radius:8px;" /></div>`;
+      case "video":
+        return `<div ${s}><h2>${escapeHtml(block.heading)}</h2><iframe width="100%" height="315" src="${youtubeEmbed(block.url)}" frameborder="0" allowfullscreen></iframe></div>`;
+      case "faq":
+        return `<div ${s}><h2>${escapeHtml(block.heading)}</h2>${block.items.map(i => `<b>${i.q}</b><p>${i.a}</p>`).join("")}</div>`;
+      default:
+        return `<div ${s}>Blok: ${block.type}</div>`;
+    }
+  };
+
+  const fullHtml = useMemo(() => {
+    return `<div class="eshop-content">\n${blocks.map(renderHtml).join("\n")}\n</div>`;
+  }, [blocks]);
+
   return (
-    <div className="builder-app">
-      <div className="builder-shell">
-        <header className="builder-hero">
-          <h1>E-shop Content Builder</h1>
-          <div className="builder-top-actions">
-            <Button onClick={() => console.log(generatedHtml)}>Kopírovat HTML</Button>
-          </div>
-        </header>
+    <div className="builder-container">
+      {/* Header */}
+      <header className="builder-header">
+        <h1 style={{color: "white"}}>E-shop Content Builder</h1>
+        <Button onClick={() => navigator.clipboard.writeText(fullHtml)}>Kopírovat HTML</Button>
+      </header>
 
-        <div className="builder-layout" style={{ display: "flex", gap: "20px" }}>
-          {/* LEVÝ SLOUPEC */}
-          <div className="builder-left" style={{ width: "300px" }}>
-            <div className="builder-panel">
-              <Field label="Název projektu">
-                <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} />
-              </Field>
-            </div>
-            <div className="builder-panel">
-              <div className="builder-panel-title">Přidat blok</div>
-              {blockCatalog.map(item => (
-                <CatalogButton key={item.type} item={item} onAdd={addBlock} />
-              ))}
-            </div>
+      <div className="builder-main-layout">
+        {/* Levý panel - Widgety */}
+        <aside className="builder-sidebar-left">
+          <div className="panel-title">Přidat blok</div>
+          <div className="widget-grid">
+            <button onClick={() => addBlock("text")}>Text</button>
+            <button onClick={() => addBlock("image")}>Obrázek</button>
+            <button onClick={() => addBlock("video")}>Video</button>
+            <button onClick={() => addBlock("faq")}>FAQ</button>
           </div>
 
-          {/* STŘEDNÍ SLOUPEC - NÁHLED */}
-          <div className="builder-center" style={{ flex: 1, border: "1px solid #ccc", padding: "10px" }}>
-            <div className="tabs">
-              <button onClick={() => setActiveTab("preview")}>Náhled</button>
-              <button onClick={() => setActiveTab("code")}>Kód</button>
-            </div>
+          <div className="panel-title" style={{marginTop: "20px"}}>Pořadí bloků</div>
+          <div className="block-list">
+            {blocks.map((b, i) => (
+              <div key={b.id} className={`block-item ${selectedId === b.id ? "active" : ""}`} onClick={() => setSelectedId(b.id)}>
+                <span>{i+1}. {b.type}</span>
+                <div className="block-controls">
+                  <button onClick={(e) => {e.stopPropagation(); moveBlock(i, "up")}}>↑</button>
+                  <button onClick={(e) => {e.stopPropagation(); moveBlock(i, "down")}}>↓</button>
+                  <button onClick={(e) => {e.stopPropagation(); deleteBlock(b.id)}} style={{color: "red"}}>🗑</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Střed - Náhled */}
+        <main className="builder-preview-area">
+          <div className="tabs">
+            <button className={activeTab === "preview" ? "active" : ""} onClick={() => setActiveTab("preview")}>Náhled</button>
+            <button className={activeTab === "code" ? "active" : ""} onClick={() => setActiveTab("code")}>Kód (HTML)</button>
+          </div>
+          
+          <div className="preview-canvas">
             {activeTab === "preview" ? (
-              <div dangerouslySetInnerHTML={{ __html: generatedHtml }} />
+              blocks.length > 0 ? (
+                <div dangerouslySetInnerHTML={{ __html: fullHtml }} />
+              ) : (
+                <div className="empty-state">Pracovní plocha je prázdná. Přidejte první blok.</div>
+              )
             ) : (
-              <pre>{generatedHtml}</pre>
+              <textarea className="code-output" readOnly value={fullHtml} />
             )}
           </div>
+        </main>
 
-          {/* PRAVÝ SLOUPEC - NASTAVENÍ */}
-          <div className="builder-right" style={{ width: "300px" }}>
-            <BlockSettings block={selectedBlock} setBlocks={setBlocks} theme={theme} />
-          </div>
-        </div>
+        {/* Pravý panel - Nastavení */}
+        <aside className="builder-sidebar-right">
+          <div className="panel-title">Nastavení bloku</div>
+          {selectedBlock ? (
+            <div className="settings-form">
+              <label>Nadpis</label>
+              <Input value={selectedBlock.heading} onChange={(e) => updateBlock(selectedBlock.id, { heading: e.target.value })} />
+              
+              <label>Text / Popis</label>
+              <Textarea value={selectedBlock.text} onChange={(e) => updateBlock(selectedBlock.id, { text: e.target.value })} />
+              
+              {(selectedBlock.type === "image" || selectedBlock.type === "video") && (
+                <>
+                  <label>URL (Obrázek/YouTube)</label>
+                  <Input value={selectedBlock.url} onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })} />
+                </>
+              )}
+
+              {selectedBlock.type === "faq" && (
+                <div className="faq-editor">
+                  <label>FAQ Položky</label>
+                  <Button size="sm" onClick={() => updateBlock(selectedBlock.id, { items: [...selectedBlock.items, {q: "", a: ""}] })}>+ Přidat dotaz</Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="empty-state">Vyberte blok pro úpravu</div>
+          )}
+        </aside>
       </div>
+
+      <style>{`
+        .builder-container { display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; background: #f0f2f5; }
+        .builder-header { background: #1a1a2e; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .builder-main-layout { display: flex; flex: 1; overflow: hidden; padding: 10px; gap: 10px; }
+        
+        .builder-sidebar-left, .builder-sidebar-right { width: 300px; background: white; border-radius: 12px; padding: 15px; overflow-y: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .builder-preview-area { flex: 1; display: flex; flex-direction: column; }
+        
+        .panel-title { font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #333; }
+        .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .widget-grid button { padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; }
+        .widget-grid button:hover { background: #f9f9f9; border-color: #9d7a5f; }
+        
+        .block-item { display: flex; justify-content: space-between; padding: 8px; border: 1px solid #eee; margin-bottom: 5px; border-radius: 6px; cursor: pointer; background: #fff; font-size: 13px; }
+        .block-item.active { border-color: #9d7a5f; background: #fdfaf8; }
+        .block-controls button { margin-left: 3px; border: none; background: #eee; border-radius: 3px; cursor: pointer; }
+
+        .preview-canvas { flex: 1; background: #fff; border-radius: 0 0 12px 12px; padding: 30px; overflow-y: auto; border: 1px solid #ddd; border-top: none; }
+        .tabs { display: flex; background: #e4e6e9; border-radius: 12px 12px 0 0; }
+        .tabs button { flex: 1; padding: 10px; border: none; cursor: pointer; border-radius: 12px 12px 0 0; }
+        .tabs button.active { background: #fff; font-weight: bold; }
+
+        .settings-form label { display: block; margin: 10px 0 5px; font-size: 13px; font-weight: bold; }
+        .builder-input, .builder-textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .code-output { width: 100%; height: 100%; font-family: monospace; font-size: 12px; padding: 10px; border: none; outline: none; resize: none; }
+        
+        .btn { padding: 8px 16px; border-radius: 8px; cursor: pointer; border: none; font-weight: bold; }
+        .btn-primary { background: #9d7a5f; color: white; }
+        .empty-state { text-align: center; color: #999; margin-top: 50px; }
+      `}</style>
     </div>
   );
 }
