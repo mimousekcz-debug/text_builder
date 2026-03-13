@@ -1,28 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Icons = {
-  Heading: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 4v16M18 4v16M6 12h12"/></svg>,
-  Text: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>,
-  TextImage: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18M3 12h18"/></svg>,
-  Image: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>,
-  Gallery: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>,
-  Youtube: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>,
-  Faq: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>,
-  Cta: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 12h8"/></svg>,
-  Table: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18"/></svg>,
   Move: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg>,
   Trash: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
 };
 
-export default function ShoptetBuilderFixed() {
+export default function ShoptetBuilderFinal() {
   const [blocks, setBlocks] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [projectName, setProjectName] = useState("produkt - CZ");
   const [library, setLibrary] = useState([]);
-  const [draggedIdx, setDraggedIdx] = useState(null);
 
+  // Načtení knihovny
   useEffect(() => {
-    const saved = localStorage.getItem("eshop_content_lib_v2");
+    const saved = localStorage.getItem("shoptet_builder_data");
     if (saved) setLibrary(JSON.parse(saved));
   }, []);
 
@@ -30,161 +21,199 @@ export default function ShoptetBuilderFixed() {
     const newEntry = { id: Date.now(), name: projectName, data: blocks };
     const updated = [...library.filter(i => i.name !== projectName), newEntry];
     setLibrary(updated);
-    localStorage.setItem("eshop_content_lib_v2", JSON.stringify(updated));
-    alert("Vzor '" + projectName + "' uložen.");
+    localStorage.setItem("shoptet_builder_data", JSON.stringify(updated));
+    alert("Uloženo do knihovny.");
   };
 
   const addBlock = (type, meta = {}) => {
     const id = crypto.randomUUID();
-    let base = { id, type, heading: "Nadpis", text: "Popis...", url: "https://placehold.co/800x400", btnText: "Tlačítko", link: "#" };
+    let newBlock = { 
+      id, 
+      type, 
+      heading: "Nadpis", 
+      text: "Textový obsah...", 
+      url: "https://placehold.co/600x400",
+      items: [] 
+    };
     
     if (type === 'benefits') {
-      base.items = Array(meta.count).fill(0).map((_, i) => ({ t: `Výhoda ${i+1}`, img: "https://placehold.co/100" }));
+      newBlock.items = Array(meta.count || 3).fill(0).map((_, i) => ({
+        t: `Výhoda ${i+1}`,
+        img: "https://www.chrapatko.cz/user/documents/upload/icon-placeholder.png"
+      }));
     }
-    if (type === 'gallery') base.urls = ["https://placehold.co/400", "https://placehold.co/401", "https://placehold.co/402"];
-    if (type === 'faq') base.items = [{ q: "Otázka?", a: "Odpověď" }];
     
-    setBlocks([...blocks, base]);
+    setBlocks([...blocks, newBlock]);
     setSelectedId(id);
   };
 
-  const updateBlock = (id, patch) => setBlocks(blocks.map(b => b.id === id ? { ...b, ...patch } : b));
+  const updateBlock = (id, patch) => {
+    setBlocks(prev => prev.map(b => b.id === id ? { ...b, ...patch } : b));
+  };
 
-  const generateHTML = () => {
-    const html = blocks.map(b => {
-      const sectionStyle = "margin-bottom: 40px; font-family: sans-serif;";
-      if (b.type === 'heading') return `<h2 style="${sectionStyle} text-align: center; font-size: 28px;">${b.heading}</h2>`;
-      if (b.type === 'text') return `<p style="${sectionStyle} line-height: 1.6;">${b.text}</p>`;
-      if (b.type === 'youtube') {
-        const id = b.url.split('v=')[1]?.split('&')[0] || b.url.split('/').pop();
-        return `<div style="${sectionStyle} position:relative; padding-bottom:56.25%; height:0; overflow:hidden;"><iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>`;
+  const updateBenefitItem = (blockId, index, field, value) => {
+    setBlocks(prev => prev.map(b => {
+      if (b.id === blockId) {
+        const newItems = [...b.items];
+        newItems[index] = { ...newItems[index], [field]: value };
+        return { ...b, items: newItems };
       }
-      if (b.type === 'image') return `<img src="${b.url}" style="${sectionStyle} width:100%; height:auto; border-radius:8px;" />`;
-      if (b.type === 'benefits') {
-        const items = b.items.map(it => `<div style="flex:1; text-align:center; padding:10px;"><img src="${it.img}" style="width:80px; margin-bottom:10px;" /><div><strong>${it.t}</strong></div></div>`).join('');
-        return `<div style="${sectionStyle} display:flex; flex-wrap:wrap; justify-content:center; gap:20px;">${items}</div>`;
-      }
-      return ``;
-    }).join('');
+      return b;
+    }));
+  };
+
+  const getYouTubeId = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const copyHTML = () => {
+    let finalHTML = `<div class="shoptet-custom-content" style="font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto;">\n`;
     
-    navigator.clipboard.writeText(html);
-    alert("HTML kód byl zkopírován do schránky!");
+    blocks.forEach(b => {
+      if (b.type === 'heading') finalHTML += `  <h2 style="text-align:center; margin: 40px 0;">${b.heading}</h2>\n`;
+      if (b.type === 'text') finalHTML += `  <p style="line-height:1.6; margin-bottom:20px;">${b.text}</p>\n`;
+      if (b.type === 'image') finalHTML += `  <img src="${b.url}" style="width:100%; height:auto; border-radius:10px; margin-bottom:30px;" alt="${b.heading}">\n`;
+      if (b.type === 'youtube') {
+        const ytId = getYouTubeId(b.url);
+        finalHTML += `  <div style="position:relative; padding-bottom:56.25%; height:0; margin-bottom:30px;"><iframe src="https://www.youtube.com/embed/${ytId}" style="position:absolute; width:100%; height:100%;" frameborder="0" allowfullscreen></iframe></div>\n`;
+      }
+      if (b.type === 'benefits') {
+        finalHTML += `  <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:20px; margin: 40px 0;">\n`;
+        b.items.forEach(it => {
+          finalHTML += `    <div style="flex:1; min-width:150px; text-align:center;"><img src="${it.img}" style="width:80px; height:80px; margin-bottom:10px;"><p><strong>${it.t}</strong></p></div>\n`;
+        });
+        finalHTML += `  </div>\n`;
+      }
+    });
+
+    finalHTML += `</div>`;
+    navigator.clipboard.writeText(finalHTML);
+    alert("HTML kód byl zkopírován!");
   };
 
   const activeBlock = blocks.find(b => b.id === selectedId);
 
   return (
-    <div className="app-container">
-      <header className="main-nav">
-        <div className="brand">E-shop Content Builder</div>
-        <button className="html-btn" onClick={generateHTML}>Kopírovat HTML</button>
+    <div className="builder-wrapper">
+      <header className="top-bar">
+        <div className="logo">E-shop Content Builder</div>
+        <button className="export-btn" onClick={copyHTML}>Kopírovat HTML</button>
       </header>
 
-      <div className="workspace">
-        <aside className="left-panel">
-          <div className="section-card">
+      <div className="main-layout">
+        {/* LEVÝ PANEL */}
+        <aside className="side-panel left">
+          <div className="card">
             <label>Název projektu</label>
-            <input className="proj-name" value={projectName} onChange={e => setProjectName(e.target.value)} />
-            <button className="save-btn" onClick={saveToLibrary}>Uložit vzor</button>
-            <select className="lib-select" onChange={e => {
-                const item = library.find(l => l.id === Number(e.target.value));
-                if (item) { setBlocks(item.data); setProjectName(item.name); }
-            }}>
-              <option value="">--- Knihovna vzorů ---</option>
-              {library.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
+            <input value={projectName} onChange={e => setProjectName(e.target.value)} />
+            <button className="primary-btn" onClick={saveToLibrary}>Uložit vzor</button>
           </div>
 
-          <div className="section-card widgets">
+          <div className="card">
             <h3>Přidat blok</h3>
-            <div className="grid">
-              <button onClick={() => addBlock('benefits', {count: 3})}>Výhody (3)</button>
-              <button onClick={() => addBlock('benefits', {count: 4})}>Výhody (4)</button>
-              <button onClick={() => addBlock('benefits', {count: 5})}>Výhody (5)</button>
-              <button onClick={() => addBlock('heading')}>Nadpis</button>
+            <div className="widget-grid">
+              <button onClick={() => addBlock('benefits', {count: 3})}>Výhody 3 ikony</button>
+              <button onClick={() => addBlock('benefits', {count: 4})}>Výhody 4 ikony</button>
+              <button onClick={() => addBlock('text-image-left')}>Text a obrázek</button>
               <button onClick={() => addBlock('text')}>Text</button>
-              <button onClick={() => addBlock('text-image-left')}>Text + Obrázek</button>
               <button onClick={() => addBlock('image')}>Obrázek</button>
-              <button onClick={() => addBlock('gallery')}>Galerie</button>
-              <button onClick={() => addBlock('faq')}>FAQ</button>
               <button onClick={() => addBlock('youtube')}>Video</button>
-              <button onClick={() => addBlock('table')}>Tabulka</button>
+              <button onClick={() => addBlock('faq')}>Otázky a odpovědi</button>
               <button onClick={() => addBlock('cta')}>CTA banner</button>
             </div>
           </div>
         </aside>
 
-        <main className="editor-canvas">
-          {blocks.map((b, idx) => (
-            <div key={b.id} className={`canvas-block ${selectedId === b.id ? 'active' : ''}`} onClick={() => setSelectedId(b.id)}>
-              <div className="block-controls">
-                <button className="del-btn" onClick={() => setBlocks(blocks.filter(x => x.id !== b.id))}><Icons.Trash /></button>
-              </div>
-              <div className="preview-area">
-                <strong>{b.type.toUpperCase()}</strong>
-                {b.type === 'image' && <img src={b.url} style={{width:'100px', display:'block'}} />}
-                {b.type === 'benefits' && <div style={{display:'flex', gap:10}}>{b.items.map((it,i) => <img key={i} src={it.img} width="30"/>)}</div>}
+        {/* STŘEDNÍ PLOCHA */}
+        <main className="canvas">
+          {blocks.length === 0 && <div className="empty-info">Klikněte na tlačítko vlevo pro přidání bloku</div>}
+          {blocks.map((b) => (
+            <div 
+              key={b.id} 
+              className={`block-item ${selectedId === b.id ? 'selected' : ''}`}
+              onClick={() => setSelectedId(b.id)}
+            >
+              <div className="block-label">{b.type.toUpperCase()}</div>
+              <button className="delete-icon" onClick={(e) => { e.stopPropagation(); setBlocks(blocks.filter(x => x.id !== b.id)); }}>
+                <Icons.Trash />
+              </button>
+              <div className="preview-content">
+                {b.type === 'benefits' ? (
+                  <div className="benefits-preview">
+                    {b.items.map((it, i) => <div key={i}><img src={it.img} alt="" /><span>{it.t}</span></div>)}
+                  </div>
+                ) : (
+                  <div>{b.heading}</div>
+                )}
               </div>
             </div>
           ))}
         </main>
 
-        <aside className="right-panel">
+        {/* PRAVÝ PANEL */}
+        <aside className="side-panel right">
           {activeBlock ? (
-            <div className="settings-box">
-              <h3>Nastavení</h3>
+            <div className="settings">
+              <h3>Nastavení: {activeBlock.type}</h3>
               <label>Nadpis</label>
-              <input value={activeBlock.heading || ''} onChange={e => updateBlock(selectedId, {heading: e.target.value})} />
+              <input value={activeBlock.heading} onChange={e => updateBlock(selectedId, {heading: e.target.value})} />
               
               <label>Text</label>
-              <textarea value={activeBlock.text || ''} onChange={e => updateBlock(selectedId, {text: e.target.value})} />
+              <textarea value={activeBlock.text} onChange={e => updateBlock(selectedId, {text: e.target.value})} />
 
-              {(activeBlock.type === 'image' || activeBlock.type === 'youtube' || activeBlock.type.includes('image')) && (
+              {(activeBlock.type === 'image' || activeBlock.type === 'youtube') && (
                 <>
                   <label>{activeBlock.type === 'youtube' ? 'YouTube URL' : 'URL Obrázku'}</label>
-                  <input value={activeBlock.url || ''} onChange={e => updateBlock(selectedId, {url: e.target.value})} />
+                  <input value={activeBlock.url} onChange={e => updateBlock(selectedId, {url: e.target.value})} />
                 </>
               )}
 
               {activeBlock.type === 'benefits' && activeBlock.items.map((it, i) => (
-                <div key={i} className="benefit-edit-row" style={{borderTop:'1px solid #eee', marginTop:10, paddingTop:10}}>
+                <div key={i} className="benefit-editor">
+                  <hr />
                   <label>Ikona {i+1} (URL)</label>
-                  <input value={it.img} onChange={e => {
-                    const newItems = [...activeBlock.items];
-                    newItems[i].img = e.target.value;
-                    updateBlock(selectedId, {items: newItems});
-                  }} />
+                  <input value={it.img} onChange={e => updateBenefitItem(selectedId, i, 'img', e.target.value)} />
                   <label>Text {i+1}</label>
-                  <input value={it.t} onChange={e => {
-                    const newItems = [...activeBlock.items];
-                    newItems[i].t = e.target.value;
-                    updateBlock(selectedId, {items: newItems});
-                  }} />
+                  <input value={it.t} onChange={e => updateBenefitItem(selectedId, i, 't', e.target.value)} />
                 </div>
               ))}
             </div>
-          ) : <p>Vyberte widget</p>}
+          ) : <div className="empty-info">Vyberte blok pro úpravu</div>}
         </aside>
       </div>
 
       <style>{`
-        .app-container { display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; background: #f4f6f8; }
-        .main-nav { background: #131432; color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .brand { font-size: 20px; font-weight: bold; }
-        .html-btn { background: #34d399; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .workspace { display: flex; flex: 1; overflow: hidden; }
-        .left-panel, .right-panel { width: 300px; padding: 20px; background: #fff; border: 1px solid #ddd; overflow-y: auto; }
-        .editor-canvas { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .canvas-block { background: #fff; padding: 20px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .canvas-block.active { border-color: #131432; }
-        .block-controls { position: absolute; right: 10px; top: 10px; }
-        .del-btn { background: #fee2e2; color: #ef4444; border: none; border-radius: 5px; cursor: pointer; padding: 5px; }
-        .settings-box label { display: block; font-size: 11px; font-weight: bold; margin-top: 15px; text-transform: uppercase; color: #666; }
-        .settings-box input, .settings-box textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .widgets .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .widgets button { padding: 10px; font-size: 11px; cursor: pointer; border: 1px solid #eee; background: #fff; border-radius: 8px; }
-        .save-btn { width: 100%; background: #131432; color: white; padding: 10px; border: none; border-radius: 8px; margin: 10px 0; cursor: pointer; }
-        .proj-name { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; }
+        .builder-wrapper { display: flex; flex-direction: column; height: 100vh; font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; }
+        .top-bar { background: #1a1b35; color: white; padding: 12px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .export-btn { background: #fff; color: #1a1b35; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .side-panel { width: 320px; background: #fff; padding: 20px; border: 1px solid #e0e0e0; overflow-y: auto; }
+        .card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #eee; }
+        
+        .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .widget-grid button { background: #f8f9fa; border: 1px solid #ddd; padding: 10px 5px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .widget-grid button:hover { background: #e9ecef; border-color: #1a1b35; }
+
+        .canvas { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .block-item { background: #fff; padding: 25px; border-radius: 12px; position: relative; border: 2px solid transparent; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .block-item.selected { border-color: #1a1b35; }
+        .block-label { position: absolute; top: 8px; left: 12px; font-size: 9px; font-weight: bold; color: #999; }
+        .delete-icon { position: absolute; top: 10px; right: 10px; border: none; background: #fee2e2; color: #ef4444; border-radius: 4px; padding: 4px; cursor: pointer; }
+        
+        .benefits-preview { display: flex; gap: 20px; justify-content: center; }
+        .benefits-preview img { width: 40px; height: 40px; display: block; margin: 0 auto; }
+        .benefits-preview span { font-size: 10px; display: block; text-align: center; margin-top: 5px; }
+
+        .settings h3 { border-bottom: 2px solid #1a1b35; padding-bottom: 8px; margin-bottom: 20px; }
+        label { display: block; font-size: 11px; font-weight: bold; margin-top: 15px; color: #666; text-transform: uppercase; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        textarea { height: 100px; }
+        .primary-btn { width: 100%; background: #1a1b35; color: white; border: none; padding: 10px; border-radius: 6px; margin-top: 10px; cursor: pointer; }
+        
+        .empty-info { text-align: center; color: #ccc; margin-top: 50px; }
       `}</style>
     </div>
   );
