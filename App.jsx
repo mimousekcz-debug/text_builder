@@ -1,31 +1,35 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-// --- IKONY PRO NOVÉ WIDGETY ---
+// --- IKONY PRO TOOLBAR ---
 const Icons = {
   Heading: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 4v16M18 4v16M6 12h12"/></svg>,
   Text: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>,
-  TextImage: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>,
-  Gallery: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>,
-  Table: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>,
-  Faq: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>,
-  Cta: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 12h8M12 8v8"/></svg>,
+  Youtube: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>,
+  Benefits: (n) => <g stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><text x="12" y="16" textAnchor="middle" fontSize="12" stroke="none" fill="currentColor" fontWeight="bold">{n}</text></g>,
   Trash: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>,
   Move: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg>
 };
 
-export default function EshopBuilderV5() {
+export default function EshopBuilderFinal() {
   const [blocks, setBlocks] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [draggedIdx, setDraggedIdx] = useState(null);
 
-  const addBlock = (type) => {
+  const addBlock = (type, count = 0) => {
     const id = crypto.randomUUID();
-    let newBlock = { id, type, heading: "Nový blok", text: "Obsah...", url: "https://placehold.co/600x400" };
+    let newBlock = { id, type, heading: "Nadpis sekce", text: "Text...", url: "" };
     
-    if (type === 'faq') newBlock.items = [{ q: "Otázka?", a: "Odpověď" }];
-    if (type === 'table') newBlock.rows = [{ label: "Hmotnost", value: "2 kg" }, { label: "Materiál", value: "Bavlna" }];
-    if (type === 'gallery') newBlock.urls = ["https://placehold.co/300", "https://placehold.co/301", "https://placehold.co/302"];
-    if (type === 'cta') { newBlock.buttonText = "Koupit nyní"; newBlock.link = "#"; }
+    if (type === 'youtube') {
+      newBlock.url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    }
+    
+    if (type === 'benefits') {
+      newBlock.count = count;
+      newBlock.items = Array(count).fill(0).map((_, i) => ({
+        t: `Výhoda ${i+1}`,
+        img: "https://cdn.myshoptet.com/usr/your-domain.cz/user/documents/upload/icon-placeholder.png"
+      }));
+    }
 
     setBlocks([...blocks, newBlock]);
     setSelectedId(id);
@@ -45,51 +49,49 @@ export default function EshopBuilderV5() {
     setBlocks(newBlocks);
   };
 
-  // --- EXPORT HTML ---
+  // --- HTML EXPORT PRO SHOPTET ---
   const generateHtml = useMemo(() => {
     return blocks.map(b => {
-      const wrapper = (content) => `<div style="padding:20px 0; max-width:900px; margin:auto; font-family:Arial, sans-serif;">${content}</div>`;
+      const wrapper = (content) => `<div class="content-block" style="padding:25px 0; max-width:1000px; margin:auto; font-family:sans-serif;">${content}</div>`;
       
-      if (b.type === 'heading') return wrapper(`<h2 style="font-size:28px; text-align:center; color:#1a1a2e;">${b.heading}</h2>`);
-      if (b.type === 'text') return wrapper(`<p style="line-height:1.6; font-size:15px; color:#444;">${b.text.replace(/\n/g, '<br>')}</p>`);
-      if (b.type === 'table') {
-        const rows = b.rows.map(r => `<tr style="border-bottom:1px solid #eee;"><td style="padding:10px; font-weight:bold;">${r.label}</td><td style="padding:10px;">${r.value}</td></tr>`).join("");
-        return wrapper(`<table style="width:100%; border-collapse:collapse; background:#f9f9f9; border-radius:8px; overflow:hidden;">${rows}</table>`);
+      if (b.type === 'heading') return wrapper(`<h2 style="text-align:center; font-size:28px;">${b.heading}</h2>`);
+      if (b.type === 'text') return wrapper(`<p style="line-height:1.6;">${b.text.replace(/\n/g, '<br>')}</p>`);
+      
+      if (b.type === 'youtube') {
+        const videoId = b.url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
+        return wrapper(`<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute; top:0; left:0; width:100%; height:100%;" frameborder="0" allowfullscreen></iframe></div>`);
       }
-      if (b.type === 'faq') {
-        const faqs = b.items.map(i => `<div style="margin-bottom:15px;"><b>Q: ${i.q}</b><br><p style="margin-top:5px; color:#666;">${i.a}</p></div>`).join("");
-        return wrapper(`<div style="background:#fff; border:1px solid #eee; padding:20px; border-radius:8px;">${faqs}</div>`);
-      }
-      if (b.type === 'gallery') {
-        const imgs = b.urls.map(u => `<img src="${u}" style="width:31%; margin:1%; border-radius:5px;">`).join("");
-        return wrapper(`<div style="display:flex; flex-wrap:wrap; justify-content:center;">${imgs}</div>`);
-      }
-      if (b.type === 'cta') {
-        return wrapper(`<div style="text-align:center; padding:30px; background:#1a1a2e; border-radius:10px; color:#fff;"><h3>${b.heading}</h3><a href="${b.link}" style="display:inline-block; background:#e63946; color:#fff; padding:12px 30px; border-radius:5px; text-decoration:none; font-weight:bold;">${b.buttonText}</a></div>`);
+
+      if (b.type === 'benefits') {
+        const items = b.items.map(it => `
+          <div style="flex:1; text-align:center; padding:10px;">
+            <img src="${it.img}" style="width:100px; height:100px; margin-bottom:10px;" alt="${it.t}">
+            <div style="font-weight:bold; font-size:14px;">${it.t}</div>
+          </div>`).join("");
+        return wrapper(`<div style="display:flex; justify-content:space-around; align-items:flex-start; gap:10px;">${items}</div>`);
       }
       return "";
     }).join("\n");
   }, [blocks]);
 
   return (
-    <div className="builder-v5">
+    <div className="builder-vfinal">
       <header className="top-bar">
-        <div className="title">ESHOP BUILDER <span>V5</span></div>
-        <button className="export-btn" onClick={() => {navigator.clipboard.writeText(generateHtml); alert("Kód zkopírován!")}}>Kopírovat HTML</button>
+        <div className="title">ESHOP CONTENT <span>BUILDER</span></div>
+        <button className="export-btn" onClick={() => {navigator.clipboard.writeText(generateHtml); alert("HTML kód byl zkopírován!")}}>Kopírovat HTML</button>
       </header>
 
-      {/* Toolbar s widgety */}
       <nav className="toolbar">
         <button onClick={() => addBlock('heading')}><Icons.Heading /> Nadpis</button>
         <button onClick={() => addBlock('text')}><Icons.Text /> Text</button>
-        <button onClick={() => addBlock('table')}><Icons.Table /> Tabulka</button>
-        <button onClick={() => addBlock('gallery')}><Icons.Gallery /> Galerie</button>
-        <button onClick={() => addBlock('faq')}><Icons.Faq /> FAQ</button>
-        <button onClick={() => addBlock('cta')}><Icons.Cta /> CTA Banner</button>
+        <button onClick={() => addBlock('youtube')}><Icons.Youtube /> YouTube Video</button>
+        <div className="sep" />
+        <button onClick={() => addBlock('benefits', 3)}><svg width="18" height="18">{Icons.Benefits(3)}</svg> 3 Výhody</button>
+        <button onClick={() => addBlock('benefits', 4)}><svg width="18" height="18">{Icons.Benefits(4)}</svg> 4 Výhody</button>
+        <button onClick={() => addBlock('benefits', 5)}><svg width="18" height="18">{Icons.Benefits(5)}</svg> 5 Výhody</button>
       </nav>
 
       <div className="editor-main">
-        {/* Pracovní plocha */}
         <div className="canvas">
           {blocks.map((b, idx) => (
             <div 
@@ -102,86 +104,99 @@ export default function EshopBuilderV5() {
             >
               <div className="block-meta">
                 <span className="drag-handle"><Icons.Move /></span>
-                <span className="type-label">{b.type.toUpperCase()}</span>
                 <button className="del-btn" onClick={(e) => { e.stopPropagation(); deleteBlock(b.id); }}><Icons.Trash /></button>
               </div>
 
               <div className="block-preview-content">
                 {b.type === 'heading' && <h2>{b.heading}</h2>}
                 {b.type === 'text' && <p>{b.text}</p>}
-                {b.type === 'table' && <div className="p-table">Tabulka s {b.rows.length} řádky</div>}
-                {b.type === 'gallery' && <div className="p-gal">Galerie ({b.urls.length} fotky)</div>}
-                {b.type === 'faq' && <div className="p-faq">FAQ ({b.items.length} otázek)</div>}
-                {b.type === 'cta' && <div className="p-cta">Tlačítko: {b.buttonText}</div>}
+                {b.type === 'youtube' && <div className="p-video">YouTube Video: {b.url}</div>}
+                {b.type === 'benefits' && (
+                  <div className="p-benefits" style={{display: 'flex', gap: '10px', justifyContent: 'space-around'}}>
+                    {b.items.map((it, i) => (
+                      <div key={i} style={{textAlign: 'center'}}><img src={it.img} style={{width: '50px'}} /><div>{it.t}</div></div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Inspektor (Vpravo) */}
         <aside className="inspector">
-          <div className="ins-header">Nastavení widgetu</div>
+          <div className="ins-header">Nastavení bloku</div>
           {selectedId ? (
             <div className="ins-body">
-              <label>Nadpis widgetu</label>
-              <input value={blocks.find(b => b.id === selectedId).heading} onChange={e => updateBlock(selectedId, {heading: e.target.value})} />
-              
-              {blocks.find(b => b.id === selectedId).type === 'text' && (
-                <><label>Text</label><textarea value={blocks.find(b => b.id === selectedId).text} onChange={e => updateBlock(selectedId, {text: e.target.value})} /></>
-              )}
-
-              {blocks.find(b => b.id === selectedId).type === 'cta' && (
+              {blocks.find(b => b.id === selectedId).type === 'youtube' ? (
                 <>
-                  <label>Text tlačítka</label>
-                  <input value={blocks.find(b => b.id === selectedId).buttonText} onChange={e => updateBlock(selectedId, {buttonText: e.target.value})} />
-                  <label>Odkaz (URL)</label>
-                  <input value={blocks.find(b => b.id === selectedId).link} onChange={e => updateBlock(selectedId, {link: e.target.value})} />
+                  <label>Odkaz na video</label>
+                  <input value={blocks.find(b => b.id === selectedId).url} onChange={e => updateBlock(selectedId, {url: e.target.value})} />
+                </>
+              ) : blocks.find(b => b.id === selectedId).type === 'benefits' ? (
+                <div className="benefit-editor">
+                  {blocks.find(b => b.id === selectedId).items.map((it, i) => (
+                    <div key={i} className="benefit-row-edit">
+                      <label>Ikona {i+1} (URL)</label>
+                      <input value={it.img} onChange={e => {
+                        const newItems = [...blocks.find(b => b.id === selectedId).items];
+                        newItems[i].img = e.target.value;
+                        updateBlock(selectedId, {items: newItems});
+                      }} />
+                      <label>Text {i+1}</label>
+                      <input value={it.t} onChange={e => {
+                        const newItems = [...blocks.find(b => b.id === selectedId).items];
+                        newItems[i].t = e.target.value;
+                        updateBlock(selectedId, {items: newItems});
+                      }} />
+                      <hr />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <label>Nadpis / Obsah</label>
+                  <input value={blocks.find(b => b.id === selectedId).heading} onChange={e => updateBlock(selectedId, {heading: e.target.value})} />
+                  <label>Text</label>
+                  <textarea value={blocks.find(b => b.id === selectedId).text} onChange={e => updateBlock(selectedId, {text: e.target.value})} />
                 </>
               )}
-
-              {blocks.find(b => b.id === selectedId).type === 'faq' && (
-                <button className="add-sub" onClick={() => {
-                  const items = [...blocks.find(b => b.id === selectedId).items, {q: "Nová otázka?", a: "Odpověď"}];
-                  updateBlock(selectedId, {items});
-                }}>+ Přidat otázku</button>
-              )}
             </div>
-          ) : <div className="empty-ins">Vyberte widget pro úpravu</div>}
+          ) : <div className="empty-ins">Vyberte widget</div>}
         </aside>
       </div>
 
       <style>{`
-        .builder-v5 { display: flex; flex-direction: column; height: 100vh; font-family: 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; }
-        .top-bar { background: #0f172a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .builder-vfinal { display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; background: #f1f5f9; }
+        .top-bar { background: #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white; }
         .title span { color: #3b82f6; font-weight: bold; }
         .export-btn { background: #3b82f6; border: none; padding: 8px 16px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; }
 
-        .toolbar { background: white; padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: center; }
-        .toolbar button { background: white; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; }
+        .toolbar { background: white; padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: center; align-items: center; }
+        .toolbar button { background: white; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; transition: 0.2s; }
         .toolbar button:hover { border-color: #3b82f6; color: #3b82f6; }
+        .sep { width: 1px; height: 24px; background: #e2e8f0; margin: 0 10px; }
 
         .editor-main { display: flex; flex: 1; overflow: hidden; }
         .canvas { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
         
-        .block-unit { background: white; width: 100%; max-width: 700px; padding: 20px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .block-unit { background: white; width: 100%; max-width: 700px; padding: 20px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .block-unit.active { border-color: #3b82f6; }
-        .block-unit:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         
-        .block-meta { position: absolute; left: -50px; top: 0; display: flex; flex-direction: column; gap: 5px; opacity: 0; transition: 0.2s; }
+        .block-meta { position: absolute; left: -45px; top: 0; display: flex; flex-direction: column; gap: 5px; opacity: 0; transition: 0.2s; }
         .block-unit:hover .block-meta { opacity: 1; }
         .drag-handle { background: white; padding: 6px; border-radius: 5px; cursor: grab; color: #94a3b8; border: 1px solid #e2e8f0; }
         .del-btn { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 6px; border-radius: 5px; cursor: pointer; }
-        .type-label { font-size: 9px; font-weight: bold; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #64748b; margin-top: 5px; text-align: center; }
 
-        .inspector { width: 300px; background: white; border-left: 1px solid #e2e8f0; padding: 20px; }
-        .ins-header { font-weight: bold; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .p-video { background: #000; color: white; padding: 20px; text-align: center; border-radius: 6px; }
+        .p-benefits { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed #cbd5e1; }
+
+        .inspector { width: 300px; background: white; border-left: 1px solid #e2e8f0; padding: 20px; overflow-y: auto; }
+        .ins-header { font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .ins-body label { display: block; font-size: 11px; font-weight: bold; margin-top: 15px; color: #64748b; text-transform: uppercase; }
-        .ins-body input, .ins-body textarea { width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 5px; box-sizing: border-box; }
-        .add-sub { width: 100%; margin-top: 20px; padding: 10px; border: 1px dashed #3b82f6; color: #3b82f6; background: #eff6ff; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .ins-body input, .ins-body textarea { width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; margin-top: 5px; box-sizing: border-box; }
+        .benefit-row-edit hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
         
-        .empty-ins { color: #94a3b8; text-align: center; margin-top: 100px; font-size: 13px; }
-        .p-cta { background: #0f172a; color: white; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; }
-        .p-table, .p-gal, .p-faq { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1; text-align: center; font-style: italic; color: #64748b; }
+        .empty-ins { color: #94a3b8; text-align: center; margin-top: 100px; }
       `}</style>
     </div>
   );
