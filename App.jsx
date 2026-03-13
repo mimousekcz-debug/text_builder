@@ -1,15 +1,3 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
 import {
   Copy,
   Wand2,
@@ -34,7 +22,189 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
+function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
+function Card({ className = "", children }) {
+  return <div className={cn("bg-white", className)}>{children}</div>;
+}
+
+function CardHeader({ className = "", children }) {
+  return <div className={className}>{children}</div>;
+}
+
+function CardContent({ className = "", children }) {
+  return <div className={className}>{children}</div>;
+}
+
+function CardTitle({ className = "", children }) {
+  return <div className={className}>{children}</div>;
+}
+
+function Button({
+  className = "",
+  children,
+  variant = "default",
+  size = "default",
+  asChild = false,
+  ...props
+}) {
+  const Comp = asChild ? "span" : "button";
+
+  const base =
+    "inline-flex items-center justify-center border text-sm font-medium transition disabled:opacity-50";
+  const variants = {
+    default: "bg-slate-900 text-white border-slate-900 hover:opacity-90",
+    secondary: "bg-white text-slate-900 border-slate-200 hover:bg-slate-50",
+    outline: "bg-white text-slate-900 border-slate-200 hover:bg-slate-50",
+    ghost: "bg-transparent text-slate-900 border-transparent hover:bg-slate-100",
+  };
+  const sizes = {
+    default: "h-10 px-4 py-2",
+    sm: "h-8 px-3 py-1.5 text-xs",
+    icon: "h-10 w-10 p-0",
+  };
+
+  return (
+    <Comp
+      className={cn(base, variants[variant] || variants.default, sizes[size] || sizes.default, className)}
+      {...props}
+    >
+      {children}
+    </Comp>
+  );
+}
+
+function Input({ className = "", ...props }) {
+  return (
+    <input
+      className={cn(
+        "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-slate-400",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function Textarea({ className = "", ...props }) {
+  return (
+    <textarea
+      className={cn(
+        "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function Label({ className = "", children, ...props }) {
+  return (
+    <label className={cn("text-sm font-medium text-slate-700", className)} {...props}>
+      {children}
+    </label>
+  );
+}
+
+function Badge({ className = "", variant = "default", children }) {
+  const styles =
+    variant === "outline"
+      ? "border border-slate-200 bg-white text-slate-700"
+      : "border border-transparent bg-slate-100 text-slate-700";
+  return <span className={cn("inline-flex items-center px-2 py-1 text-xs font-medium", styles, className)}>{children}</span>;
+}
+
+function ScrollArea({ className = "", children }) {
+  return <div className={cn("overflow-auto", className)}>{children}</div>;
+}
+
+function Switch({ checked, onCheckedChange }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onCheckedChange?.(!checked)}
+      className={cn(
+        "relative h-6 w-11 rounded-full transition",
+        checked ? "bg-slate-900" : "bg-slate-300"
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 h-5 w-5 rounded-full bg-white transition",
+          checked ? "left-5" : "left-0.5"
+        )}
+      />
+    </button>
+  );
+}
+
+function Select({ value, onValueChange, children }) {
+  const options = React.Children.toArray(children)
+    .flatMap((child) => (child?.props?.children ? React.Children.toArray(child.props.children) : []))
+    .filter(Boolean)
+    .map((item) => ({
+      value: item.props.value,
+      label: item.props.children,
+    }));
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onValueChange?.(e.target.value)}
+      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-slate-400"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function SelectTrigger({ children }) {
+  return <>{children}</>;
+}
+function SelectValue() {
+  return null;
+}
+function SelectContent({ children }) {
+  return <>{children}</>;
+}
+function SelectItem() {
+  return null;
+}
+
+function Dialog({ children }) {
+  return <>{children}</>;
+}
+function DialogTrigger({ children }) {
+  return <>{children}</>;
+}
+function DialogContent({ className = "", children }) {
+  return <div className={className}>{children}</div>;
+}
+function DialogHeader({ children }) {
+  return <div>{children}</div>;
+}
+function DialogTitle({ children }) {
+  return <div className="text-lg font-semibold">{children}</div>;
+}
+
+function Tabs({ children }) {
+  return <div>{children}</div>;
+}
+function TabsList({ className = "", children }) {
+  return <div className={className}>{children}</div>;
+}
+function TabsTrigger({ className = "", children }) {
+  return <button type="button" className={cn("rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm", className)}>{children}</button>;
+}
+function TabsContent({ className = "", children }) {
+  return <div className={className}>{children}</div>;
+}
 function escapeHtml(str) {
   return (str || "")
     .replace(/&/g, "&amp;")
